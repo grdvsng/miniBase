@@ -1,8 +1,0 @@
-{
-    "CSRF_ENABLED":    true,
-    "SECRET_KEY":      "qwerty1234",
-    "template_folder": "./",
-    "static_url_path": "./bin/web",
-    "static_folder":   "./web",
-    "host":            "127.0.1.1"
-}

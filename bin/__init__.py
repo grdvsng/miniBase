@@ -4,42 +4,84 @@ from flask import (
 	url_for,
 	request as flaskRequest
 )
-from os import path as osPath
+
+from os.path import dirname
 from sys import path as sysPath
 
-sysPath.append(osPath.dirname(__file__))
-from handler import * # Application Handler + LogWriter
+sysPath.append(dirname(__file__))
+from handler import CoreHandler, osPath, getJsonContentFromFile # Application event handler(+log writer)
 
 
 class FlaskGateway(Flask):
 
-	baseDir   = osPath.dirname(__file__)
-	_config   = osPath.join(baseDir, "web", "config.json")
-	logParams = osPath.join(baseDir, "logparams.json")
-	handler   = CoreHandler(logParams)
-	mainFiles = [
-		_config
-	]
+	baseDir = osPath.dirname(__file__)
+	_config = None
 
-	def __init__(self):
+	def __init__(self, serverCfgPAth, logCfgPath):
 		super().__init__(__name__)
 
-		self.handler("Start running", "File: %s" % path, 2)
-		self.onStart()
-		self.initConfig()
+		self._configPAth = osPath.join(self.baseDir, *osPath.split(serverCfgPAth))
+		self.logParams   = osPath.join(self.baseDir, *osPath.split(logCfgPath))
+		self.handler     = CoreHandler(self.logParams)
+		self.jsonFiles   = [{
+			"att": "_config",
+			"path": self._configPAth
+		}]
 
-	def onStart(self):
-		for path in self.mainFiles:
+		self._initConfig()
+
+	def _initConfig(self):
+		self._setAttrsByJsonFiles()
+		self.initBasicConfig()
+		self.initContentConfig()
+
+	def _setAttrsByJsonFiles(self):
+		for item in self.jsonFiles:
+			path    = item["path"]
+			attName = item["att"]
+
 			if not osPath.exists(path):
 				self.handler("Main path not exists", "File: %s" % path, 0)
 			else:
-				self.handler("File connected!", "File: %s" % path, 2)
+				self._setAttFromJsonFile(attName, path)
 
-	def initConfig(self):
-		pass
+	def _setAttFromJsonFile(self, attName, jsonPath):
+			try:
+				self.__setattr__(attName, getJsonContentFromFile(jsonPath))
+				self.handler("Attribute connected!", "Attribute: %s" % attName, 2)
+
+			except:
+				self.handler("Error on file parse.", "File: %s" % jsonPath, 0)
+
+	def start(self):
+		@self.route("/")
+		@self.route("/index")
+		def main():
+			return render_template(osPath.join(self.baseDir, 'web/index.html'))
+
+		self.run(**self._config["connection"])
+
+	def initContentConfig(self):
+
+		for k, p in self._config["files"].items():
+			absPath = osPath.join(self.baseDir, *osPath.split(p))
+
+			if not osPath.exists(absPath):
+				self.__setattr__(k, absPath)
+				self.handler("Template file not exists.", "File: %s" % absPath, 1)
+
+			else:
+				self.handler("Template file connected.", "File: %s" % absPath, 2)
+
+	def initBasicConfig(self):
+		self.config.update(**self._config["basic"])
+
+serverCfgPAth = "config.json"
+logCfgPath    = "log_config.json" # not require
+app           = FlaskGateway(serverCfgPAth, logCfgPath)
 
 if __name__ == '__main__':
-	FlaskGateway()
+	app.start()
 
 
 

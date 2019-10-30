@@ -1,0 +1,17 @@
+{
+    "connection": {
+        "host": "127.0.1.1",
+        "port": "8080"
+    },
+
+    "basic": {
+        "CSRF_ENABLED": true,
+        "SECRET_KEY":   "qwerty1234"
+    },
+
+    "files": {
+        "template_folder": "/web",
+        "static_url_path": "web",
+        "static_folder":   "web"
+    }
+}
