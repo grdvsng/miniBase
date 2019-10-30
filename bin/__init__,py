@@ -1,0 +1,32 @@
+from flask import (
+	Flask,
+	render_template,
+	url_for,
+	request as flaskRequest
+)
+
+from os.path import abspath
+from os import chdir
+
+app = Flask(
+	__name__,
+	template_folder = abspath(".\\"),
+	static_url_path = "./bin/web",
+	static_folder   = "web"
+)
+
+@app.route("/")
+@app.route("/index")
+def main():
+	return render_template('index.html')
+
+@app.route('/restapi/get/domain', methods=['GET'])
+def getPerson():
+	print(flaskRequest.url)
+
+	return flaskRequest.url
+
+
+if __name__ == '__main__':
+	app.config.from_pyfile(abspath('./bin/web/config.py'))
+	app.run(host='127.0.1.1', port='8080')
