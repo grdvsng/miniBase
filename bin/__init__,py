@@ -1,3 +1,5 @@
+import json
+
 from flask import (
 	Flask,
 	render_template,
@@ -5,19 +7,18 @@ from flask import (
 	request as flaskRequest
 )
 
-from os.path import abspath
-from os import chdir
+from os import path as osPath
 
-app = Flask(
-	__name__,
-	template_folder = abspath(".\\"),
-	static_url_path = "./bin/web",
-	static_folder   = "web"
-)
+"""
+
+
+
 
 @app.route("/")
 @app.route("/index")
 def main():
+	print(abspath('./'))
+
 	return render_template('index.html')
 
 @app.route('/restapi/get/domain', methods=['GET'])
@@ -26,7 +27,30 @@ def getPerson():
 
 	return flaskRequest.url
 
-
 if __name__ == '__main__':
-	app.config.from_pyfile(abspath('./bin/web/config.py'))
+	app.config.from_pyfile(cfgPath)
 	app.run(host='127.0.1.1', port='8080')
+"""
+
+class FlaskGateway(Flask):
+
+	self.baseDir   = osPath.dirname(__file__)
+	self._config   = osPath.join(self.baseDir, "./bin/web/config.py")
+	self.mainFiles = [
+		self._config
+	]
+
+	def __init__(self):
+		super().__init__(__name__)
+
+		self.onStart()
+		self.initConfig()
+
+	def onStart(self):
+		for path in self.mainFiles:
+			if !osPath.exists(path):
+				raise CoreMainFileError
+
+
+if __name__ = '__main__':
+	FlaskGateway()
