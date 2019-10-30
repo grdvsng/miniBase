@@ -94,7 +94,7 @@ class HTMLJsonGateway:
 		propsStr = ""
 
 		for prop in propertyJson:
-			propsStr += ' {0}="{1}" '.format(list(prop.keys())[0], list(prop.values())[0])
+			propsStr += ' {0}="{1}"'.format(list(prop.keys())[0], list(prop.values())[0])
 
 		return propsStr
 
@@ -104,12 +104,25 @@ class HTMLJsonGateway:
 
 		return content
 
+	def _listToStr(self, _list, separator="\n"):
+		curstr = ''
+
+		if isinstance(_list, str):
+			return _list
+
+		else:
+			for n in _list:
+				curstr += n + separator if _list.index(n) != len(_list) else ""
+
+			return curstr
+
+
 	def createElement(self, params):
 		tag    = params["tag"]
 		props  = self.generatProperty(params["property"]) if "property"  in params.keys() else ""
-		text   = params["innerText"]                      if "innerText" in params.keys() else ""
+		text   = self._listToStr(params["innerText"])     if "innerText" in params.keys() else ""
 		items  = params["items"]                          if "items"     in params.keys() else ""
-		parsed = "\n<{0}{1}>{2}\n".format(tag, props, text)
+		parsed = "\n<{0}{1}>\n\t{2}".format(tag, props, text)
 
 		if (items):
 			for item in items:
@@ -121,17 +134,25 @@ class HTMLJsonGateway:
 
 
 class CoreHandler:
+	footerTags = [
+		"</tbody>",
+		"</table>"
+		"</body>",
+		"</html>"
+	]
+
+	events = [{
+		"type": "Error",
+		"_class": CoreError,
+	}, {
+		"type": "Warning",
+		"_class": CoreWarning
+	}, {
+		"type": "Info",
+		"_class": CoreInfo
+	}]
+
 	def __init__(self, logParamsPath):
-		self.events = [{
-			"type": "Error",
-			"_class": CoreError,
-		}, {
-			"type": "Warning",
-			"_class": CoreWarning
-		}, {
-			"type": "Info",
-			"_class": CoreInfo
-		}]
 		self.handled = []
 		self.baseDir = osPath.dirname(__file__)
 
@@ -193,15 +214,24 @@ class CoreHandler:
 				"property": [{"class": "EventTime"}]
 			}]
 		}
+	def _FooterModify(self, content, mode='clear'):
+		for tag in self.footerTags:
+
+			if mode == 'clear':
+				content = content.replace(tag, "")
+
+			else:
+				content += tag
+
+		return content
 
 	def _appendNodeOnLogTable(self, event, title, description):
 		el      = self._generateLogNode(event, title, description)
-		content = self.log.createElement(el) + "\n<body>\n</html>"
-
+		content = self._FooterModify(self.log.createElement(el), 'append')
+		"""
 		with open(self.logPath, 'r+') as file:
-			doc = file.read().replace("</body>", "").replace("</html>", "") + content
-			print(doc)
-			file.write(doc)
+			doc = self._FooterModify(file.read(), 'append')+ content
+			file.write(doc)"""
 
 	def __call__(self, title, message, eventType=0):
 		self.handle(title, message, eventType)

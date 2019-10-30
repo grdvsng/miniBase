@@ -10,7 +10,17 @@
             "items": [{
                 "tag": "style",
                 "property": [{"type": "text/css"}],
-                "innerText": "tr {border: 1px solid black}"
+                "innerText": [
+                    "td {",
+                    "border: 1px solid black;",
+                    "padding: 2px",
+                    "font-size: 14pt",
+                    "}",
+                    ".Main-Table {",
+                    "border-collapse: separate;",
+                    "border-spacing: 0px;",
+                    "}"
+                ]
             }, {
                 "tag": "title",
                 "innerText": "Log File"
@@ -19,20 +29,29 @@
             "tag": "body",
 
             "items": [{
-                "tag": "tr",
+                "tag": "table",
+                "property": [{"class": "Main-Table"}],
+
                 "items": [{
-                    "tag": "td",
-                    "innerText": "Title",
-                    "property": [{"class": "EventTitleHeader"}]
-                }, {
-                    "tag": "td",
-                    "innerText": "Description",
-                    "property": [{"class": "EventDescriptionHeader"}]
-                }, {
-                    "tag": "td",
-                    "innerText": "Time",
-                    "property": [{
-                        "class": "EventTimeHeader"
+                    "tag": "tbody",
+                    "items": [{
+                        "tag": "tr",
+
+                        "items": [{
+                            "tag": "td",
+                            "innerText": "Title",
+                            "property": [{"class": "EventTitleHeader"}]
+                        }, {
+                            "tag": "td",
+                            "innerText": "Description",
+                            "property": [{"class": "EventDescriptionHeader"}]
+                        }, {
+                            "tag": "td",
+                            "innerText": "Time",
+                            "property": [{
+                                "class": "EventTimeHeader"
+                            }]
+                        }]
                     }]
                 }]
             }]
