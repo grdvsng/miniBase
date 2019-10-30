@@ -10,6 +10,7 @@ from flask import (
 from os import path as osPath
 from datetime import datetime
 
+
 class InnerApplicationError(Exception):
 	pass
 
@@ -84,7 +85,7 @@ class CoreInfo:
 		return msg
 
 
-class HTMLJsonGateway(object):
+class HTMLJsonGateway:
 
 	def __init__(self):
 		pass
@@ -92,100 +93,65 @@ class HTMLJsonGateway(object):
 	def generatProperty(self, propertyJson):
 		propsStr = ""
 
-		for k, v in propertyJson.items():
-			propsStr += ' {0}="{1}" '.format(k, v)
+		for prop in propertyJson:
+			propsStr += ' {0}="{1}" '.format(list(prop.keys())[0], list(prop.values())[0])
 
 		return propsStr
 
+	def getJsonContentFromFile(self, path):
+		with open(path, 'r') as file:
+			content = json.load(file)
+
+		return content
+
 	def createElement(self, params):
 		tag    = params["tag"]
-		props  = self.generatProperty(params["property"]) if params["property"] else ""
-		text   = params["innerText"] if params["innerText"] else ""
-		items  = params["items"]
-		parsed = "<{0}{1}>{2}".format(tag, props, text)
+		props  = self.generatProperty(params["property"]) if "property"  in params.keys() else ""
+		text   = params["innerText"]                      if "innerText" in params.keys() else ""
+		items  = params["items"]                          if "items"     in params.keys() else ""
+		parsed = "\n<{0}{1}>{2}\n".format(tag, props, text)
 
 		if (items):
 			for item in items:
 				parsed += self.createElement(item)
 
-		parsed += "</{0}>".format(tag)
+		parsed += "\n</{0}>".format(tag)
 
 		return parsed
 
 
-class CoreHandler():
-	"""
-	Handle application core event.
-
-	"""
-
-	events = [{
-		"type": "Error",
-		"_class": CoreError,
-	}, {
-		"type": "Warning",
-		"_class": CoreWarning
-	}, {
-		"type": "Info",
-		"_class": CoreInfo
-	}]
-	logName = "MiniBase Log File"
-	handled = []
-	log     = HTMLJsonGateway()
-	logDeclare = {
-		"tag": "html",
-
-		"items": [{
-			"tag": "head",
-
-			"items": [{
-				"tag": "style",
-				"property": [{"type": "text/css",}],
-				"innerText": """
-					tr {
-						border: 1px solid black
-					}
-				""",
-			}, {
-				"tag": "title",
-				"innerText": logName
-			}]
+class CoreHandler:
+	def __init__(self, logParamsPath):
+		self.events = [{
+			"type": "Error",
+			"_class": CoreError,
 		}, {
-			"tag": "body",
-
-			"items": [{
-				"tag": "tr",
-				"items": [{
-					"tag": "td",
-					"innerText": "Title",
-					"property": [{"class": "EventTitleHeader"}]
-				}, {
-					"tag": "td",
-					"innerText": "Description",
-					"property": [{"class": "EventDescriptionHeader"}]
-				}, {
-					"tag": "td",
-					"innerText": "Time",
-					"property": [{
-                        "class": "EventTimeHeader"
-                    }]
-				}]
-			}]
+			"type": "Warning",
+			"_class": CoreWarning
+		}, {
+			"type": "Info",
+			"_class": CoreInfo
 		}]
-	}
+		self.handled = []
+		self.baseDir = osPath.dirname(__file__)
 
-	def __init__(self, logPath=None):
-		self.logPath = logPath
+		if logParamsPath:
+			self._initLog(logParamsPath)
 
-		if (self.logPath):
-			self._initLog()
+	def _initLog(self, logParamsPath):
 
-	def _initLog(self):
+		if osPath.exists(logParamsPath):
+			self.log       = HTMLJsonGateway()
+			self.logParams = self.log.getJsonContentFromFile(logParamsPath)
+			self.logPath   = osPath.join(self.baseDir, self.logParams["path"])
+
+			self._generateLogFile()
+
+	def _generateLogFile(self):
 		if not osPath.exists(self.logPath):
-			content = self.log.createElement(self.logDeclare)
+			content = self.log.createElement(self.logParams["page"])
 
-			with open(self.logPath, 'a+') as file:
-				file.write(content)
+			with open(self.logPath, 'a+') as file: file.write(content)
 
 	def handle(self, title, message, eventType=0):
 		"""
@@ -204,7 +170,7 @@ class CoreHandler():
 		self.handled.append(event)
 
 		if self.logPath:
-			self._appendNodeOnLogTable(eventItem.type, event.title, event.message)
+			self._appendNodeOnLogTable(eventItem["type"], event.title, event.message)
 
 		event()
 
@@ -230,10 +196,11 @@ class CoreHandler():
 
 	def _appendNodeOnLogTable(self, event, title, description):
 		el      = self._generateLogNode(event, title, description)
-		content = self.log.createElement(el) + "<body></html>"
+		content = self.log.createElement(el) + "\n<body>\n</html>"
 
-		with open(self.logPath, 'w') as file:
-			doc = file.readAll().replace("</body>", "").replace("</html>", content)
+		with open(self.logPath, 'r+') as file:
+			doc = file.read().replace("</body>", "").replace("</html>", "") + content
+			print(doc)
 			file.write(doc)
 
 	def __call__(self, title, message, eventType=0):
@@ -244,8 +211,8 @@ class FlaskGateway(Flask):
 
 	baseDir   = osPath.dirname(__file__)
 	_config   = osPath.join(baseDir, "web", "config1.json")
-	logPath   = osPath.join(baseDir, "log.html")
-	handler   = CoreHandler(logPath)
+	logParams = osPath.join(baseDir, "logparams.json")
+	handler   = CoreHandler(logParams)
 	mainFiles = [
 		_config
 	]
@@ -259,7 +226,7 @@ class FlaskGateway(Flask):
 	def onStart(self):
 		for path in self.mainFiles:
 			if not osPath.exists(path):
-				self.handler("Main path not exists", "File: %s" % path, 0)
+				self.handler("Main path not exists", "File: %s" % path, 1)
 
 	def initConfig(self):
 		pass
