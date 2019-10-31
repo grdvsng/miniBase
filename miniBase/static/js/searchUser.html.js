@@ -18,24 +18,41 @@ var searchPage =
 
                 properties:
                 [
-                    new ElProperty("placeholder", "Username"),
-                    new ElProperty("title", "Search user in base"),
-                    new ElProperty("required", true)
+                    {"name": "placeholder", "value": "Username"},
+                    {"name": "title",       "value": "Search user in base"},
+                    {"name": "required",    "value": true}
                 ],
 
                 listeners:
                 [
-                    new ElListener("keyup", function(){
-                        var request = new Request('/rest/api/search/user', {method: 'post', body: '{"myql": "fullname -like "' + this.val + '"}'});
-
-                        console.log(request)
-                    })
+                    {
+                        "event": "keyup",
+                        "action": (function()
+                        {
+                            var response = this.getEl().Engine.makeRequest(
+                                "/rest/api/getUsers",
+                                "GET",
+                                {
+                                    "table": "users",
+                                    "select":
+                                    {
+                                        "fullName": this.value,
+                                        "method": "like"
+                                    },
+                                    "method": "select",
+                                    "operator": "like"
+                                }
+                            );
+                        })
+                    }
                 ],
 
-                validators:
-                [
-                    new Validator(/[a-zA-Z ]+/gi, "Wrong format, full name does not contain numbers and special characters", "Warring")
-                ]
+                "validators":
+                [{
+                    "re": /[a-zA-Z ]+/gi,
+                    "msg": "Wrong format, full name does not contain numbers and special characters",
+                    "type": "Warring"
+                }]
             }]
         }]
     }]

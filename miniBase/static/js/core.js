@@ -104,12 +104,12 @@ function format(str, args)
  */
 var Validator = (function()
 {
-    function Validator(re, message, messageType)
+    function Validator(params)
     {
-        this.id      = "Validator-" + messageType;
+        this.id      = "Validator-" + params.type;
         this.clsName = "Validator";
-        this.message = message;
-        this.re      = re;
+        this.message = params.msg;
+        this.re      = params.re;
     }
 
     Validator.prototype.generateElement = function(triggerRect)
@@ -186,9 +186,6 @@ var BasicTextInput = (function()
     /**
      * BasicTextInput constructor
      * @constructor
-     * @param {Validator} validator
-     * @param {Array<ElProperty>} properties
-     * @param {Array<ElListener>} listeners
      */
     function BasicTextInput(params)
     {
@@ -225,7 +222,7 @@ var BasicTextInput = (function()
 
         for (v=0; v < validators.length; v++)
         {
-            this.pushValidator(validators[v]);
+            this.pushValidator(new Validator(validators[v]));
         }
 
         return this.validators;
@@ -499,7 +496,7 @@ var Engine = (function()
     {
         var master   = master || document.body,
             cls      = (typeof declElement.cls !== 'string') ? declElement.cls:window[declElement.cls];
-            exemplar = new cls(),
+            exemplar = new cls(declElement),
             compiled = this.compiler.compileElement(exemplar, master);
         compiled.Engine = this;
 
@@ -530,6 +527,18 @@ var Engine = (function()
 
             this.createElement(elem, master);
         }
+    }
+
+    Engine.prototype.makeRequest = function(url, method, innerQl)
+    {
+        var xmlHttp = new XMLHttpRequest();
+
+        xmlHttp.open(method.toUpperCase(), url);
+        xmlHttp.setRequestHeader("Content-Type", "application/json");
+        xmlHttp.send(JSON.stringify((innerQl)));
+
+        console.log(1,0);
+        return xmlHttp.responseText;
     }
 
     return Engine;

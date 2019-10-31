@@ -2,7 +2,8 @@ from flask import (
 	Flask,
 	render_template,
 	url_for,
-	request as flaskRequest
+	request as flaskRequest,
+	jsonify
 )
 
 from os.path import dirname
@@ -56,9 +57,12 @@ class FlaskGateway(Flask):
 	def start(self):
 		@self.route("/")
 		@self.route("/index")
-		def main():
-			print(self.template_folder, 777)
+		def index():
 			return render_template('index.html')
+
+		@self.route("/rest/api/getUsers")
+		def search():
+			return jsonify({"Name": "Gomer"});
 
 		self.handler("Server loading", "Server start running!", 2)
 		self.run(**self._config["connection"])
