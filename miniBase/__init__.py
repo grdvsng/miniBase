@@ -15,7 +15,7 @@ from handler import CoreHandler, osPath, getJsonContentFromFile # Application ev
 class FlaskGateway(Flask):
 
 	baseDir = osPath.dirname(__file__)
-	_config = None
+	_config = {}
 
 	def __init__(self, serverCfgPAth, logCfgPath):
 		super().__init__(__name__)
