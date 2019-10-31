@@ -165,6 +165,8 @@ class CoreHandler(HandlerNodeTypes):
 		"_class": CoreInfo
 	}]
 
+	logPath  = None
+
 	def __init__(self, logParamsPath):
 		self.handled = []
 		self.baseDir = osPath.dirname(__file__)

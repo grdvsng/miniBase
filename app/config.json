@@ -11,7 +11,7 @@
 
     "files": {
         "template_folder": "/web",
-        "static_url_path": "web",
-        "static_folder":   "web"
+        "static_url_path": "",
+        "static_folder":   ""
     }
 }

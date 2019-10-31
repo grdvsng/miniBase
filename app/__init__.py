@@ -76,13 +76,6 @@ class FlaskGateway(Flask):
 	def initBasicConfig(self):
 		self.config.update(**self._config["basic"])
 
-serverCfgPAth = "config.json"
-logCfgPath    = "log_config.json" # not require
-app           = FlaskGateway(serverCfgPAth, logCfgPath)
-
-if __name__ == '__main__':
-	app.start()
-
 
 
 
