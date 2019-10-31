@@ -60,12 +60,13 @@ class FlaskGateway(Flask):
 			print(self.template_folder, 777)
 			return render_template('index.html')
 
+		self.handler("Server start running!", 2)
 		self.run(**self._config["connection"])
 
 	def initContentConfig(self):
 
 		for k, p in self._config["files"].items():
-			absPath =sPath.join(self.baseDir, * oosPath.split(p))
+			absPath = osPath.join(self.baseDir, *osPath.split(p))
 
 			if not osPath.exists(absPath):
 				self.__setattr__(k, absPath)

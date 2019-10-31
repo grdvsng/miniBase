@@ -1,4 +1,4 @@
-from miniBase import *
+from miniBase import FlaskGateway
 
 
 serverCfgPAth = "config.json"
