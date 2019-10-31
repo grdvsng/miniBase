@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": "AAAA,UACA;EACI,QAAQ,EAAE,QAAQ;EAClB,SAAS,EAAE,IAAI;EACf,OAAO,EAAE,GAAG;EACZ,WAAW,EAAE,MAAM;;AAGvB,kBACA;EACI,UAAU,EAAE,OAAkB;EAC9B,KAAK,EAAO,KAAK;EACjB,MAAM,EAAE,iBAA4B",
+"sources": ["scss/default_basic_elements.scss"],
+"names": [],
+"file": "default.css"
+}
