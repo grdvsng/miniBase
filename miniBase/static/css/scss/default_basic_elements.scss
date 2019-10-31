@@ -1,14 +1,99 @@
+body
+{
+    * {
+        font-family: Arial, Helvetica, sans-serif;
+    }
+}
+
 .Validator
 {
     position: absolute;
     font-size: 10pt;
     padding: 5px;
-    font-weight: bolder;
+    border-radius: 5px;
+    font-weight: 700;
 }
 
 #Validator-Warring
 {
     background: rgb(208, 245, 243);
-    color:      black;
+    color:      rgb(100, 100, 100);
     border: 2px solid rgb(235, 235, 235);
+}
+
+.BasicTextInput, .BasicTextInput-Label
+{
+    outline: 0px;
+    font-size: 12pt;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.BasicTextInput-Label
+{
+    color: white;
+    font-weight: bolder;
+    font-size: 14pt;
+}
+
+.BasicPlate, .BasicHeader
+{
+    width: 60%;
+    left: 20%;
+    right: 20%;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.BasicPlate
+{
+    position: absolute;
+    background: #f7f7f7;
+    height: 100%;
+    top:42px;
+}
+
+.BasicHeader
+{
+    text-align: center;
+    font-stretch: extra-condensed;
+    font-weight: 900;
+    height: 25px;
+    position: absolute;
+    background:  rgb(31, 44, 51);
+    font-size: 14pt;
+    top: 0;
+    border: 2px 0px 0px 2px groove rgb(255, 255, 255);
+    color: azure;
+}
+
+.BasicSearchForm
+{
+    position: relative;
+    text-align: center;
+    padding: 20px;
+    border: 1px inset black;
+    background-color: rgb(54, 77, 88);
+    margin-left: 0;
+    margin-right: 0;
+
+    * {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+}
+
+.BasicSearchFormLabel
+{
+    position: relative;
+    font-size: 14pt;
+    font-weight: bolder;
+    color: azure;
+}
+
+.BasicGreed
+{
+    position: absolute;
+    left: 0;
+    right: 0;
 }

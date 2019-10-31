@@ -28,19 +28,50 @@ function _addEventListener(element, event, action)
 	}
 }
 
-
-function generateFunctionWhatDeleteElementIfHimNotEventTarget(elem, elem2)
+function getScrollPositionByCSS1Support(isCSS1Compat)
 {
-    return (function(ev)
-    {
-        var event  = ev || window.event,
-            target = event.target || event.srcElement;
+    var xy = {};
 
-        if (target !== elem && target !== elem2)
-        {
-            this.parentNode.removeChild(elem);
-        }
-    })
+    if (isCSS1Compat)
+    {
+        xy.x = document.documentElement.scrollLeft;
+        xy.y = document.documentElement.scrollTop;
+    } else {
+        xy.x = document.body.scrollLeft;
+        xy.y = document.body.scrollTop;
+    }
+
+    return xy;
+}
+
+function getScrollPosition()
+{
+    var xy = {};
+
+    if (window.pageXOffset || false)
+    {
+        xy.x = window.pageXOffset;
+        xy.y = window.pageYOffset;
+    } else {
+        xy = getScrollPositionByCSS1Support(document.compatMode === "CSS1Compat")
+    }
+
+    return xy;
+}
+
+function getScrollYPosition()
+{
+    return getScrollPosition().y;
+}
+
+function keepTrackOfTheScrollY(elem)
+{
+    var action = function()
+    {
+        elem.style.top = getScrollYPosition();
+    }
+
+    _addEventListener(window, 'scroll', action);
 }
 
 
@@ -71,7 +102,7 @@ function format(str, args)
  * Basic validator
  * @class
  */
-Validator = (function()
+var Validator = (function()
 {
     function Validator(re, message, messageType)
     {
@@ -85,36 +116,43 @@ Validator = (function()
     {
         var elem = document.createElement("div");
 
-        elem.className  = this.clsName;
-        elem.id         = this.id;
-        elem.style.top  = triggerRect.bottom + 2;
-        elem.style.left = triggerRect.bottom + 2;
-        elem.innerHTML  = this.message;
+        elem.className   = this.clsName;
+        elem.id          = this.id;
+        elem.style.top   = triggerRect.bottom + 2;
+        elem.style.left  = triggerRect.left;
+        elem.style.width = triggerRect.right - triggerRect.left;
+        elem.innerHTML   = this.message;
 
         return elem;
     }
 
-    Validator.prototype.connectLogicToElem = function(elem, trigger)
+    Validator.prototype.remove = function()
     {
-        var action = generateFunctionWhatDeleteElementIfHimNotEventTarget(elem, trigger)
+        if (this.dom)
+        {
+            this.dom.parentNode.removeChild(this.dom);
 
-        _addEventListener(document.body, "mousemove", action);
+            delete this.dom;
+        }
     }
 
     Validator.prototype.render = function(trigger)
     {
-        var rect = trigger.getBoundingClientRect(),
+        var oldV = document.getElementById(this.id),
+            rect = trigger.getBoundingClientRect(),
             dom  = this.generateElement(rect);
 
-        //this.connectLogicToElem(dom, trigger);
+        if (oldV) oldV.parentNode.removeChild(oldV);
         document.body.appendChild(dom);
+
+        this.dom = dom;
     }
 
     return Validator;
 })();
 
 
-ElProperty = (function()
+var ElProperty = (function()
 {
     function ElProperty(name, value)
     {
@@ -126,7 +164,7 @@ ElProperty = (function()
 })();
 
 
-ElListener = (function()
+var ElListener = (function()
 {
     function ElListener(event, action)
     {
@@ -138,11 +176,12 @@ ElListener = (function()
 })();
 
 
+
 /**
  * Basic input element
  * @class
  */
-BasicTextInput = (function()
+var BasicTextInput = (function()
 {
     /**
      * BasicTextInput constructor
@@ -151,13 +190,33 @@ BasicTextInput = (function()
      * @param {Array<ElProperty>} properties
      * @param {Array<ElListener>} listeners
      */
-    function BasicTextInput(properties, listeners, validators)
+    function BasicTextInput(params)
     {
-        this.properties = properties || [];
-        this.listeners  = listeners  || [];
-        this.validators = (validators) ? this.pushValidators(validators):null;
+        this.properties = params.properties || [];
+        this.listeners  = params.listeners  || [];
+        this.validators = (params.validators) ? this.pushValidators(params.validators):null;
         this.tag        = "input";
         this.clsName    = "BasicTextInput";
+        this.label      = params.label || null;
+
+        if (params.label) this.render = this.generateLabel;
+    }
+
+    BasicTextInput.prototype.generateLabel = function()
+    {
+        var tb = document.createElement("div"),
+            lb = document.createElement("span"),
+            el = document.createElement("span");
+
+        lb.className = this.clsName + "-Label";
+        lb.innerHTML = this.label;
+
+        el.appendChild(this.dom);
+        tb.appendChild(lb);
+        tb.appendChild(el);
+
+        this.Engine.reDom(this, tb);
+        this.master.appendChild(tb);
     }
 
     BasicTextInput.prototype.pushValidators = function(validators)
@@ -166,7 +225,7 @@ BasicTextInput = (function()
 
         for (v=0; v < validators.length; v++)
         {
-            var valid = this.pushValidator(validators[v]);
+            this.pushValidator(validators[v]);
         }
 
         return this.validators;
@@ -176,11 +235,14 @@ BasicTextInput = (function()
     {
         return function()
         {
-            var val = this.value;
+            var val = this.value.replace(validator.re, "");
 
-            if (!val.match(validator.re))
+            if (val !== "")
             {
+                validator.remove();
                 validator.render(this);
+            } else {
+                validator.remove();
             }
         }
     }
@@ -188,7 +250,7 @@ BasicTextInput = (function()
     BasicTextInput.prototype.pushValidator = function(validator)
     {
         var action    = this.generateValidate(validator),
-            validator = new ElListener("keydown", action);
+            validator = new ElListener("keyup", action);
 
         this.validators.push(validator);
         this.listeners.push(validator);
@@ -200,7 +262,112 @@ BasicTextInput = (function()
 })()
 
 
-ElementCompiler = (function()
+var BasicGreed = (function()
+{
+    function BasicGreed(params)
+    {
+        this.clsName = "BasicGreed";
+        this.items   = params.items;
+        this.tag     = "div";
+        this.format  = params.format;
+    }
+
+    BasicTextInput.prototype.generateCell = function(data)
+    {
+        var td = document.createElement("span");
+
+        td.className = this.clsName + "-Cell";
+        td.innerText = data;
+
+        return td;
+    }
+
+    BasicTextInput.prototype.generateCellsFromArray= function(arr)
+    {
+        var elems = [];
+
+        for (var n=0; n < arr.length; n++)
+        {
+            elems.push(this.generateCell(arr[n]));
+        }
+
+        return elems;
+    }
+    BasicTextInput.prototype.generateHeader = function()
+    {
+        var tHead       = document.createElement("div"),
+            children    = this.generateColumn(this.format);
+        tHead.className = this.clsName + "-Thead";
+
+        for (var n=0; n < children.length; n++) tHead.appendChild(children[n]);
+
+        return tHead;
+    }
+
+    BasicTextInput.prototype.render = function()
+    {
+        if (this.format) this.generateHeader();
+
+        this.master.appendChild(this.dom);
+    }
+
+    return BasicGreed;
+})()
+
+
+var BasicPlate = (function()
+{
+    function BasicPlate(params)
+    {
+        this.clsName = "BasicPlate";
+        this.items   = params.items;
+        this.tag     = "div";
+    }
+
+    return BasicPlate;
+})()
+
+
+var BasicSearchForm = (function()
+{
+    function BasicSearchForm(params)
+    {
+        this.clsName    = "BasicSearchForm";
+        this.tag        = "div";
+        this.properties = params.properties || [];
+        this.listeners  = params.listeners  || [];
+        this.items      = params.items  || [];
+        this.innerHTML  = params.label ? "<div class='BasicSearchFormLabel'>" + params.label + "<div>":null;
+    }
+
+    return BasicSearchForm;
+})()
+
+
+var BasicHeader = (function()
+{
+    function BasicHeader(params)
+    {
+        this.clsName    = "BasicHeader";
+        this.tag        = "div";
+        this.properties = params.properties || [];
+        this.listeners  = params.listeners  || [];
+        this.innerHTML  = params.innerHTML;
+    }
+
+    BasicHeader.prototype.render = function()
+    {
+        var self = this;
+
+        this.master.appendChild(this.dom);
+        keepTrackOfTheScrollY(this.dom);
+    }
+
+    return BasicHeader;
+})()
+
+
+var ElementCompiler = (function()
 {
     function ComponentCompiler(master)
     {
@@ -209,37 +376,60 @@ ElementCompiler = (function()
 
     ComponentCompiler.prototype.compileElement = function(element, master)
     {
-        var htmlEl = document.createElement(element.tag);
-        element.master = (master) ? master.get():document.body;
+        var htmlEl     = document.createElement(element.tag);
+        element.master = master || document.body;
 
         this.merger(element, htmlEl);
 
         return element;
     }
 
-    ComponentCompiler.prototype.renderElement = function(coreElement)
+    ComponentCompiler.prototype.renderElement = function(InnerEl)
     {
-        coreElement.master.appendChild(coreElement.dom);
+        InnerEl.master.appendChild(InnerEl.dom);
     }
 
-    ComponentCompiler.prototype.merger = function(coreElement, htmlEl)
+    ComponentCompiler.prototype.removeElement = function(InnerEl)
+    {
+        var _engine = compiled.Engine;
+
+        InnerEl.dom.parentNode.removeChild(InnerEl.dom);
+
+        if (_engine)
+        {
+            _engine.elements = _engine.elements.filter(function(el)
+            {
+                return el !== InnerEl;
+            })
+        }
+    }
+
+    ComponentCompiler.prototype.mergeHTMLAndInnerAttrs = function(InnerEl, htmlEl)
     {
         var self = this;
 
-        htmlEl.className   = coreElement.clsName
-        coreElement.dom    = htmlEl;
-        coreElement.render = function() {self.renderElement(coreElement)};
+        htmlEl.className   = InnerEl.clsName;
+        htmlEl.innerHTML   = (InnerEl.innerHTML) || "";
+        htmlEl.getEl       = function(){return InnerEl;};
+        InnerEl.dom        = htmlEl;
+        InnerEl.render     = InnerEl.render || function() {self.renderElement(InnerEl)};
+        InnerEl.remove     = InnerEl.render || function() {self.removeElement(InnerEl)};
+    }
 
-        if (coreElement.properties)
+    ComponentCompiler.prototype.merger = function(InnerEl, htmlEl)
+    {
+        this.mergeHTMLAndInnerAttrs(InnerEl, htmlEl);
+
+        if (InnerEl.properties)
         {
-            this.connectProperties(htmlEl, coreElement.properties);
+            this.connectProperties(htmlEl, InnerEl.properties);
         }
-        if (coreElement.listeners)
+        if (InnerEl.listeners)
         {
-            this.connectListeners(htmlEl, coreElement.listeners);
+            this.connectListeners(htmlEl, InnerEl.listeners);
         }
 
-        return coreElement;
+        return InnerEl;
     }
 
     /**
@@ -279,37 +469,52 @@ ElementCompiler = (function()
 })()
 
 
-Engine = (function()
+var Engine = (function()
 {
-    function Engine(PageElements)
+    function Engine(page)
     {
         this.compiler = new ElementCompiler(this);
         this.elements = [];
 
-        if (PageElements)
+        if (page.items)
         {
-            this.createElements(PageElements);
+            this.createElements(page.items);
         }
     }
 
-    Engine.prototype.createElement = function(element)
+    Engine.prototype.createElement = function(declElement, master)
     {
-        var compiled = this.compiler.compileElement(element);
+        var master   = master || document.body,
+            exemplar = new declElement.cls(declElement),
+            compiled = this.compiler.compileElement(exemplar, master);
+        compiled.Engine = this;
 
-        if (compiled.items) this.createElements(compiled.items);
-
+        compiled.render();
         this.elements.push(compiled);
+
+        if (compiled.items) this.createElements(compiled.items, compiled.dom);
 
         return compiled;
     }
 
-    Engine.prototype.createElements = function(elements)
+    Engine.prototype.reDom = function(InnerEl, newDom)
     {
+        newDom.render = InnerEl.dom.render;
+        newDom.remove = InnerEl.dom.remove;
+        newDom.getEl  = InnerEl.dom.getEl;
+        InnerEl.dom   = newDom;
+    }
+
+    Engine.prototype.createElements = function(elements, master)
+    {
+        var master = master || document.body;
+        elements   = elements.reverse();
+
         for (var el=0; el < elements.length; el++)
         {
-            var elem = this.createElement(elements[el]);
-            console.log(elem)
-            elem.render();
+            var elem = elements[el];
+
+            this.createElement(elem, master);
         }
     }
 
@@ -317,27 +522,49 @@ Engine = (function()
 })();
 
 
-var SearchFieldProperties =
-[
-    new ElProperty("title", "Search User")
-];
+var page =
+{
+    items: [{
+        cls: BasicHeader,
+        innerHTML: "miniBase"
+    }, {
+        cls: BasicPlate,
 
-var SearchFieldListeners =
-[
-    new ElListener("click", function(){console.log("click...")})
-];
+        items: [{
+            cls: BasicGreed,
+            format: ["Name", "Patronymic", "Surname"],
 
-var SearchFieldValidators =
-[
-    new Validator(/[^0-9\W]/gi, "Incorrect format, should use only word and space!", "Warring")
-];
+            items: [{
+                cls: BasicSearchForm,
 
-var pageElements =
-[
-    new BasicTextInput(SearchFieldProperties, SearchFieldListeners, SearchFieldValidators)
-];
+                items: [{
+                    cls: BasicTextInput,
+                    label: "Search user in base",
+
+                    properties:
+                    [
+                        new ElProperty("placeholder", "Username"),
+                        new ElProperty("title", "Search user in base"),
+                        new ElProperty("required", true)
+                    ],
+
+                    listeners:
+                    [
+                        new ElListener("click", function(){console.log('click')})
+                    ],
+
+                    validators:
+                    [
+                        new Validator(/[a-zA-Z ]+/gi, "Wrong format, full name does not contain numbers and special characters", "Warring")
+                    ]
+                }]
+            }]
+        }]
+    }]
+}
+
 
 window.onload = function()
 {
-    window["App"] = new Engine(pageElements)
+    window["App"] = new Engine(page)
 }
