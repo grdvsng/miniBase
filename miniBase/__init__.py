@@ -57,7 +57,8 @@ class FlaskGateway(Flask):
 		@self.route("/")
 		@self.route("/index")
 		def main():
-			return render_template(osPath.join(self.baseDir, 'index.html'))
+			print(self.template_folder, 777)
+			return render_template('index.html')
 
 		self.run(**self._config["connection"])
 

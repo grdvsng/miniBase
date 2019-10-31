@@ -10,7 +10,7 @@
     },
 
     "files": {
-        "template_folder": "templates",
-        "static_folder":   "templates/static"
+        "template_folder": "/templates",
+        "static_folder":   "/templates/static"
     }
 }
