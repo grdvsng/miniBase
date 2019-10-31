@@ -9,7 +9,7 @@ from os.path import dirname
 from sys import path as sysPath
 
 sysPath.append(dirname(__file__))
-from handler import CoreHandler, osPath, getJsonContentFromFile # Application event handler(+log writer)
+from lib import CoreHandler, osPath, getJsonContentFromFile # Application event handler(+log writer)
 
 
 class FlaskGateway(Flask):
@@ -65,8 +65,7 @@ class FlaskGateway(Flask):
 	def initContentConfig(self):
 
 		for k, p in self._config["files"].items():
-			#absPath =sPath.join(self.baseDir, * oosPath.split(p))
-			absPath = p
+			absPath =sPath.join(self.baseDir, * oosPath.split(p))
 
 			if not osPath.exists(absPath):
 				self.__setattr__(k, absPath)
