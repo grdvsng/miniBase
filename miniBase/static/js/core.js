@@ -537,8 +537,7 @@ var Engine = (function()
         xmlHttp.setRequestHeader("Content-Type", "application/json");
         xmlHttp.send(JSON.stringify((innerQl)));
 
-        console.log(1,0);
-        return xmlHttp.responseText;
+        return xmlHttp.response;
     }
 
     return Engine;
