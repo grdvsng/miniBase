@@ -1,4 +1,4 @@
-from app import *
+from miniBase import *
 
 
 serverCfgPAth = "config.json"

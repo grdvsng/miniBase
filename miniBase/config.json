@@ -11,6 +11,6 @@
 
     "files": {
         "template_folder": "/templates",
-        "static_folder":   "/templates/static"
+        "static_folder":   "/static"
     }
 }
