@@ -270,45 +270,58 @@ var BasicGreed = (function()
         this.items   = params.items;
         this.tag     = "div";
         this.format  = params.format;
+        this.rows    = [];
     }
 
-    BasicTextInput.prototype.generateCell = function(data)
+    BasicGreed.prototype.getTdWidth = function(data)
     {
-        var td = document.createElement("span");
+        if (!this.cellWidth)
+        {
+            var rect  = this.master.getBoundingClientRect(),
+                width = rect.width;
 
-        td.className = this.clsName + "-Cell";
-        td.innerText = data;
+            this.cellWidth = (width / this.format.length) + 'px';
+        }
+
+        return this.cellWidth;
+    }
+
+    BasicGreed.prototype.generateCell = function(data)
+    {
+        var td = document.createElement("div");
+
+        td.className   = this.clsName + "-Cell";
+        td.innerText   = data;
+        td.style.width = this.cellWidth || this.getTdWidth();
 
         return td;
     }
 
-    BasicTextInput.prototype.generateCellsFromArray= function(arr)
+    BasicGreed.prototype.generateRow= function(arr, clsName)
     {
-        var elems = [];
+        var row = document.createElement("div");
+        row.className = clsName || this.clsName + "-Row";
 
         for (var n=0; n < arr.length; n++)
         {
-            elems.push(this.generateCell(arr[n]));
+            row.appendChild(this.generateCell(arr[n]));
         }
 
-        return elems;
+        return row;
     }
-    BasicTextInput.prototype.generateHeader = function()
-    {
-        var tHead       = document.createElement("div"),
-            children    = this.generateColumn(this.format);
-        tHead.className = this.clsName + "-Thead";
 
-        for (var n=0; n < children.length; n++) tHead.appendChild(children[n]);
+    BasicGreed.prototype.generateHeader = function()
+    {
+        var clsName = this.clsName + "-Row-Head",
+            tHead   = this.generateRow(this.format, clsName);
 
         return tHead;
     }
 
-    BasicTextInput.prototype.render = function()
+    BasicGreed.prototype.render = function()
     {
-        if (this.format) this.generateHeader();
-
         this.master.appendChild(this.dom);
+        this.dom.insertBefore(this.generateHeader(), this.dom.firstChild);
     }
 
     return BasicGreed;
@@ -485,7 +498,8 @@ var Engine = (function()
     Engine.prototype.createElement = function(declElement, master)
     {
         var master   = master || document.body,
-            exemplar = new declElement.cls(declElement),
+            cls      = (typeof declElement.cls !== 'string') ? declElement.cls:window[declElement.cls];
+            exemplar = new cls(),
             compiled = this.compiler.compileElement(exemplar, master);
         compiled.Engine = this;
 
@@ -520,51 +534,3 @@ var Engine = (function()
 
     return Engine;
 })();
-
-
-var page =
-{
-    items: [{
-        cls: BasicHeader,
-        innerHTML: "miniBase"
-    }, {
-        cls: BasicPlate,
-
-        items: [{
-            cls: BasicGreed,
-            format: ["Name", "Patronymic", "Surname"],
-
-            items: [{
-                cls: BasicSearchForm,
-
-                items: [{
-                    cls: BasicTextInput,
-                    label: "Search user in base",
-
-                    properties:
-                    [
-                        new ElProperty("placeholder", "Username"),
-                        new ElProperty("title", "Search user in base"),
-                        new ElProperty("required", true)
-                    ],
-
-                    listeners:
-                    [
-                        new ElListener("click", function(){console.log('click')})
-                    ],
-
-                    validators:
-                    [
-                        new Validator(/[a-zA-Z ]+/gi, "Wrong format, full name does not contain numbers and special characters", "Warring")
-                    ]
-                }]
-            }]
-        }]
-    }]
-}
-
-
-window.onload = function()
-{
-    window["App"] = new Engine(page)
-}

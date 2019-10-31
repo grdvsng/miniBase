@@ -60,7 +60,7 @@ class FlaskGateway(Flask):
 			print(self.template_folder, 777)
 			return render_template('index.html')
 
-		self.handler("Server start running!", 2)
+		self.handler("Server loading", "Server start running!", 2)
 		self.run(**self._config["connection"])
 
 	def initContentConfig(self):
@@ -77,7 +77,6 @@ class FlaskGateway(Flask):
 
 	def initBasicConfig(self):
 		self.config.update(**self._config["basic"])
-
 
 
 

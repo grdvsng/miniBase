@@ -271,7 +271,7 @@ class HTMLJsonGateway(listConverter):
 	def createElement(self, params):
 		tag    = params["tag"]
 		props  = self.generatProperty(params["property"]) if "property"  in params.keys() else ""
-		text   = self.listToStr(params["innerText"])     if "innerText" in params.keys() else ""
+		text   = self.listToStr(params["innerText"])      if "innerText" in params.keys() else ""
 		items  = params["items"]                          if "items"     in params.keys() else ""
 		parsed = "\n<{0}{1}>\n\t{2}".format(tag, props, text)
 

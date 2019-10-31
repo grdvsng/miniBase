@@ -97,3 +97,27 @@ body
     left: 0;
     right: 0;
 }
+
+.BasicGreed-Row, .BasicGreed-Row-Head
+{
+    border-bottom: 2px solid black;
+    border-top: 1px solid black;
+    border-right: 1px solid rgb(179, 177, 177);
+    text-align: center;
+
+    * {
+        display: table-cell;
+        border-left: 1px solid rgb(179, 177, 177);
+    }
+}
+
+.BasicGreed-Row-Head
+{
+    background-color: rgb(239, 255, 246);
+    font-weight: 900;
+
+    * {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+}
