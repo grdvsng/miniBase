@@ -1,9 +1,9 @@
-from miniBase import FlaskGateway
+from miniBase import Application
 
 
 serverCfgPAth = "config.json"
 logCfgPath    = "lib/log_config.json" # not require
-app           = FlaskGateway(serverCfgPAth, logCfgPath)
+app           = Application(serverCfgPAth, logCfgPath)
 
 if __name__ == '__main__':
     FLASK_APP=app

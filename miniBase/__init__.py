@@ -1,25 +1,18 @@
-from flask import (
-	Flask,
-	render_template,
-	url_for,
-	request as flaskRequest,
-	jsonify
-)
-
 from os.path import dirname
 from sys import path as sysPath
 
 sysPath.append(dirname(__file__))
-from lib import CoreHandler, osPath, getJsonContentFromFile # Application event handler(+log writer)
+from lib          import CoreHandler, osPath, getJsonContentFromFile
+from flaskGateway import FlaskGateway
 
 
-class FlaskGateway(Flask):
+class Application(FlaskGateway):
 
 	baseDir = osPath.dirname(__file__)
 	_config = {}
 
 	def __init__(self, serverCfgPAth, logCfgPath):
-		super().__init__(__name__)
+		super().__init__()
 
 		self._configPAth = osPath.join(self.baseDir, *osPath.split(serverCfgPAth))
 		self.logParams   = osPath.join(self.baseDir, *osPath.split(logCfgPath))
@@ -55,15 +48,6 @@ class FlaskGateway(Flask):
 				self.handler("Error on file parse.", "File: %s" % jsonPath, 0)
 
 	def start(self):
-		@self.route("/")
-		@self.route("/index")
-		def index():
-			return render_template('index.html')
-
-		@self.route("/rest/api/getUsers")
-		def search():
-			return jsonify({"Name": "Gomer"});
-
 		self.handler("Server loading", "Server start running!", 2)
 		self.run(**self._config["connection"])
 
@@ -81,6 +65,3 @@ class FlaskGateway(Flask):
 
 	def initBasicConfig(self):
 		self.config.update(**self._config["basic"])
-
-
-
