@@ -64,16 +64,31 @@ function getScrollYPosition()
     return getScrollPosition().y;
 }
 
-function keepTrackOfTheScrollY(elem)
+function keepTrackOfTheScrollY(elem, x)
 {
     var action = function()
     {
-        elem.style.top = getScrollYPosition();
+        if (!elem.getEl().inAction)
+        {
+            setTimeout(function()
+            {
+                var y = getScrollYPosition();
+
+                elem.style.top        = y + (x || 0);
+                elem.getEl().inAction = false;
+            }, 250);
+        }
     }
 
     _addEventListener(window, 'scroll', action);
 }
 
+function MakeElemsBlurredBesides(exec)
+{
+    var engine = exec.getEl().Engine;
+    
+    console.log(engine.elements.length);
+}
 
 /**
  * MultiBrowser String formating
@@ -189,8 +204,7 @@ var BasicTextInput = (function()
      */
     function BasicTextInput(params)
     {
-        this.properties = params.properties || [];
-        this.listeners  = params.listeners  || [];
+        this.listeners  = params.listeners || [];
         this.validators = (params.validators) ? this.pushValidators(params.validators):null;
         this.tag        = "input";
         this.clsName    = "BasicTextInput";
@@ -257,6 +271,33 @@ var BasicTextInput = (function()
 
     return BasicTextInput;
 })()
+
+
+var BasicFloatingWindow = (function()
+{
+    function BasicFloatingWindow(params)
+    {
+        this.clsName = "BasicFloatingWindow";
+        this.items   = params.items;
+        this.tag     = "div";
+    }
+
+    return BasicFloatingWindow;
+})();
+
+
+var BasicBottom = (function()
+{
+    function BasicBottom(params)
+    {
+        this.clsName   = "BasicBottom";
+        this.items     = params.items;
+        this.tag       = "button";
+        this.innerHTML = params.innerHTML;
+    }
+
+    return BasicBottom;
+})();
 
 
 var BasicGreed = (function()
@@ -363,14 +404,6 @@ var BasicHeader = (function()
         this.properties = params.properties || [];
         this.listeners  = params.listeners  || [];
         this.innerHTML  = params.innerHTML;
-    }
-
-    BasicHeader.prototype.render = function()
-    {
-        var self = this;
-
-        this.master.appendChild(this.dom);
-        keepTrackOfTheScrollY(this.dom);
     }
 
     return BasicHeader;
@@ -483,22 +516,61 @@ var Engine = (function()
 {
     function Engine(page)
     {
-        this.compiler = new ElementCompiler(this);
-        this.elements = [];
-
-        if (page.items)
+        this.replacePage(page);
+    }
+ 
+    Engine.prototype.destroyPage = function(page)
+    {
+        if (this.page)
         {
-            this.createElements(page.items);
+            if (this.page.destroy) this.page.destroy;
+        } else {
+            if (document.body)     document.body.innerHTML = "";
         }
+    }
+
+    Engine.prototype.replacePage = function(page)
+    {
+        this.destroyPage();
+
+        this.compiler     = new ElementCompiler(this);
+        this.elements     = [];
+        this.afterRender  = [];
+        this.page         = page;
+        this.page.reverse = (this.page.reverse !== undefined) ? this.page.reverse:true;
+
+        if (page.items) this.createElements(page.items);
+        
+        this._afterRender();
+    }
+    
+    Engine.prototype._afterRender = function()
+    {
+        for (var n=0; n < this.afterRender.length; n++)
+        {
+            var schedule = this.afterRender[n];
+
+            schedule();
+        }
+    }
+
+    Engine.prototype.createExemplar = function(cls, declElement)
+    {
+        var exemplar = new cls(declElement);
+
+        exemplar.properties = declElement.properties || [];
+        exemplar.listeners  = declElement.listeners  || [];
+        exemplar.Engine     = this;
+
+        return exemplar;
     }
 
     Engine.prototype.createElement = function(declElement, master)
     {
         var master   = master || document.body,
             cls      = (typeof declElement.cls !== 'string') ? declElement.cls:window[declElement.cls];
-            exemplar = new cls(declElement),
+            exemplar = this.createExemplar(cls, declElement),
             compiled = this.compiler.compileElement(exemplar, master);
-        compiled.Engine = this;
 
         compiled.render();
         this.elements.push(compiled);
@@ -519,7 +591,8 @@ var Engine = (function()
     Engine.prototype.createElements = function(elements, master)
     {
         var master = master || document.body;
-        elements   = elements.reverse();
+        
+        if (this.page.reverse) elements.reverse();
 
         for (var el=0; el < elements.length; el++)
         {

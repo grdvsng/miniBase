@@ -1,4 +1,4 @@
-var searchPage =
+var search_user_page =
 {
     items: [{
         cls: "BasicHeader",

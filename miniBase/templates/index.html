@@ -4,7 +4,9 @@
         <link rel="shortcut icon" href="../static/media/favicon.ico" type="image/x-icon">
         <link rel="stylesheet" href="../static/css/default.css">
         <title>miniBase</title>
-        <script src="../static/js/searchUser.html.js" type="text/javascript">
+        <script src="../static/js/pages/search_user_page.html.js" type="text/javascript">
+        </script>
+        <script src="../static/js/pages/index_page.html.js" type="text/javascript">
         </script>
         <script src="../static/js/core.js" type="text/javascript">
         </script>
@@ -12,7 +14,9 @@
         <script>
             window.onload = function()
             {
-                window["App"] = new Engine(searchPage);
+                //search_user_page.html
+                //index_page
+                window["App"] = new Engine(index_page);
             }
         </script>
     </head>
