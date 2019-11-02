@@ -15,12 +15,13 @@ var index_page =
             items: 
             [{
                 cls: "BasicHeader",
-                innerHTML: "miniBase"
+                label: "miniBase"
             }, {
-                cls: "BasicBottom",
+                cls: "BasicButton",
                 innerHTML: "Search user",
 
-                listeners: [{
+                listeners:
+                [{
                     "event": "click",
                     "action": function()
                     {
@@ -28,7 +29,7 @@ var index_page =
                     }
                 }]
             }, {
-                cls: "BasicBottom",
+                cls: "BasicButton",
                 innerHTML: "Push user" 
             }]
         }]
