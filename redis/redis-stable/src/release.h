@@ -1,3 +1,0 @@
-#define REDIS_GIT_SHA1 "21658acf"
-#define REDIS_GIT_DIRTY "318"
-#define REDIS_BUILD_ID "sysadmin-P5K-PRO-1572600554"
