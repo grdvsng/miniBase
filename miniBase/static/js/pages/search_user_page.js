@@ -1,11 +1,27 @@
 var search_user_page =
 {
     reverse: false,
+    cls: "search_user_page",
     
     items: [{
         cls: "BasicHeader",
         keepScroll: true,
-        label: "miniBase"
+        label: "miniBase",
+        
+        properties:
+        [{
+            "name": "title",
+            "value": "Back to index"
+        }],
+
+        listeners:
+        [{
+            event: "click",
+            action: function()
+            {
+                MINIBASE.replacePage("index_page");
+            }
+        }]
     }, {
         cls: "BasicPlate",
 
@@ -33,21 +49,35 @@ var search_user_page =
                     value: true
                 }],
 
-                listeners:
-                [
-                ],
-
                 "validators":
                 [{
-                    "re": /[a-zA-Z ]+/gi,
-                    "msg": "Wrong format, full name does not contain numbers and special characters",
+                    "re": /[a-zA-Z@.0-9_]+/gi,
+                    "msg": "Wrong format for name or mail address...",
                     "type": "Warring"
                 }]
             }]
         }, {
             cls: "BasicGreed",
-            format: ["Name", "Patronymic", "Surname"],
-            
+            format: ["Name", "Mail"],
+            prefill: [["<br />", "<br />"]]
+        }, {
+                cls: "BasicButton",
+                innerHTML: "ADD USER",
+                
+                properties:
+                [{
+                    name: "id", 
+                    value: "search_user_page_add_button"
+                }],
+
+                listeners:
+                [{
+                    event: "click",
+                    action: function()
+                    {
+                        MINIBASE.replacePage("push_user_page");
+                    }
+                }]
         }]
     }]
 }

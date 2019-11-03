@@ -1,6 +1,7 @@
 var index_page =
 {
     reverse: false,
+    cls: "index_page",
 
     items: [{
         cls: "BasicPlate",
@@ -25,12 +26,21 @@ var index_page =
                     "event": "click",
                     "action": function()
                     {
-                        this.getEl().Engine.replacePage(window["search_user_page"]);
+                        MINIBASE.replacePage("search_user_page");
                     }
                 }]
             }, {
                 cls: "BasicButton",
-                innerHTML: "Push user" 
+                innerHTML: "Push user",
+
+                listeners:
+                [{
+                    "event": "click",
+                    "action": function()
+                    {
+                        MINIBASE.replacePage("push_user_page");
+                    }
+                }]
             }]
         }]
     }]

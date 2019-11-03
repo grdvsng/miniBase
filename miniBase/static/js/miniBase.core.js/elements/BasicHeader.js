@@ -4,8 +4,6 @@ var BasicHeader = (function()
     {
         this.clsName     = "BasicHeader";
         this.tag         = "div";
-        this.properties  = params.properties || [];
-        this.listeners   = params.listeners  || [];
         this.keepScroll  = params.keepScroll || false;
         this.innerHTML   = "<span id='BasicHeader-Label'>" + params.label + "</span>";
     }

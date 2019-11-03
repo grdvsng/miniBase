@@ -14,7 +14,8 @@ var BasicTextInput = (function()
         this.validators = (params.validators) ? this.pushValidators(params.validators):null;
         this.tag        = "input";
         this.clsName    = "BasicTextInput";
-        this.label      = params.label || null;
+        this.label      = params.label      || null;
+        this.min_length = params.min_length || 0;
 
         if (params.label) this.render = this.generateLabel;
     }

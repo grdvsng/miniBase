@@ -8,9 +8,16 @@ var app =
    "pages":
    [
        "index_page",
-       "search_user_page"
+       "search_user_page",
+       "push_user_page"
    ],
    
+   // if user should past style in "./styles" , in Array push only file name
+   "my_styles": 
+   [
+       "main"
+   ],
+
    "index": "index_page",
-   "style": "default"
+   "style": "default",
 }

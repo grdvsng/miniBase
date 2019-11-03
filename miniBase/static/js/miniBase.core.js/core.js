@@ -74,7 +74,7 @@ var ElementCompiler = (function()
         InnerEl.render   = InnerEl.render   || function() { self.renderElement(InnerEl)  };
         InnerEl.remove   = InnerEl.render   || function() { self.removeElement(InnerEl)  };
     }
-
+    
     ComponentCompiler.prototype.mergeHTMLAndInnerAttrs = function(InnerEl, htmlEl)
     {
         htmlEl.className   = InnerEl.clsName;
@@ -113,7 +113,7 @@ var ElementCompiler = (function()
         {
             var prop = properties[p];
 
-            htmlEl[prop.name] = prop.value
+            htmlEl.setAttribute(prop.name, prop.value || true);
         }
     }
 
@@ -194,6 +194,23 @@ var HTMLGataway = (function()
         return elem;
     }
 
+    HTMLGataway.prototype.createInputField = function(params, clsPref)
+    {
+        var row = document.createElement("tr"),
+            lbl = document.createElement("td"),
+            inp = document.createElement("td");
+       
+        row.className = clsPref + "-Field";
+        lbl.innerHTML = "<div>" + params.label + "</div>";
+        inp.innerHTML = "<input type='" + params.type + " ' name='" + params.name + "' " + (params.required || "") + " class='" + clsPref + "-Field-Input' >";
+        lbl.className = clsPref + "-Field-Label";
+
+        row.appendChild(lbl);
+        row.appendChild(inp);
+    
+        return row;
+    }
+    
     return HTMLGataway;
 })();
 
@@ -202,15 +219,16 @@ var Engine = (function()
 {
     function Engine(app)
     {
-        this.htmlGataway = new HTMLGataway(this);
-        this.config      = app;
-        this.myDir       = this.getEnginePath();
-        this.utillsPath  = this.myDir + "/utilities/basic_utilities.js";
-        this.compiler    = new ElementCompiler(this);
+        this.config     = app;
+        this.myDir      = this.getEnginePath();
+        this.utillsPath = this.myDir + "/utilities/basic_utilities.js";
+        
+        __inheritance(this, [new ElementCompiler(this), new HTMLGataway(this)]);
 
-       this.onStart()
+        this.setEngineGlobalVars();
+        this.onStart()
     }
-
+    
     Engine.prototype.getEnginePath = function()
     {
         var scripts = document.getElementsByTagName('script');
@@ -227,20 +245,43 @@ var Engine = (function()
 
     Engine.prototype.onStart = function()
     {
-        this.setBaseUttils();
-        this.setBaseElements();
-        this.setAppIco();
-        this.setStyle();
-        this.setTitle();
-        this.setPages();
-        this.run();
+        for (var n=0; n < MINIBASE_PRIVATE_FUNCTIONS.length; n++)
+        {
+            var methodName = MINIBASE_PRIVATE_FUNCTIONS[n];
+            
+            this[methodName]();
+            
+            delete this[methodName];
+        }
     }
     
+    Engine.prototype.setEngineGlobalVars = function()
+    {
+        for (var key in MINIBASE_ENVS)
+        {
+            var val = MINIBASE_ENVS[key];
+            
+            window[key] = (val !== 'miniBase') ? val:this;
+        }
+    }
+
     Engine.prototype.setStyle = function()
     {
         var path = this.myDir + "/styles/" + (this.config.style || "default") + ".css";
+        
+        this.connectStyle(path);
+    }
 
-        this.htmlGataway.connectStyle(path);
+    Engine.prototype.setUserStyles = function()
+    {
+        var paths = this.config.my_styles || [];
+
+        for (var n=0; n < paths.length; n++)
+        {
+            var path = this.getPath("../styles/" + paths[n] + ".css");
+            
+            this.connectStyle(path);
+        }
     }
 
     Engine.prototype.run = function()
@@ -253,7 +294,6 @@ var Engine = (function()
 
             self.initPage(page);
         }
-        
     }
 
     Engine.prototype.setPages = function()
@@ -262,7 +302,7 @@ var Engine = (function()
         {
             var page = this.config.pages[n],
                 path = this.getPath("pages/" + page + ".js"),
-                elem = this.htmlGataway.connectScript(path);
+                elem = this.connectScript(path);
             
             elem.id = "Page-" + page;
         }
@@ -270,7 +310,7 @@ var Engine = (function()
 
     Engine.prototype.setTitle = function()
     {
-        this.htmlGataway.connectTitle(this.config.name  || "Test-Page miniBase");
+        this.connectTitle(this.config.name  || "Test-Page miniBase");
     }
 
     Engine.prototype.setAppIco = function()
@@ -279,13 +319,13 @@ var Engine = (function()
         {
             var path = this.getPath(this.config.ico);
             
-            this.htmlGataway.connectFavicon(path);
+            this.connectFavicon(path);
         }
     }
 
     Engine.prototype.getPath = function(path)
     {
-        return this.myDir.replace(/[^/]+$/g, "") + path.replace(/\.\//g, "");
+        return this.myDir.replace(/[^/]+$/g, "") + path.replace(/\.\.\//g, "");
     }
 
     Engine.prototype.setBaseElements = function()
@@ -295,7 +335,7 @@ var Engine = (function()
         for (var n=0; n < elements.length; n++)
         {
             var path = this.myDir + "/elements/" + elements[n] + ".js",
-                elem = this.htmlGataway.connectScript(path);
+                elem = this.connectScript(path);
             
             elem.id = "Element-" + elements[n];
         }
@@ -303,7 +343,7 @@ var Engine = (function()
 
     Engine.prototype.setBaseUttils = function()
     {
-        this.htmlGataway.connectScript(this.utillsPath);
+        this.connectScript(this.utillsPath);
     }
 
     Engine.prototype.destroyPage = function(page)
@@ -320,8 +360,9 @@ var Engine = (function()
     {
         this.elements     = [];
         this.afterRender  = [];
-        this.page         = page;
+        this.page         = (typeof page === 'string') ? window[page]:page;
         this.page.reverse = (this.page.reverse !== undefined) ? this.page.reverse:false;
+        document.body.className = this.page.cls;
 
         await this.createElements(page.items || []);
         this._afterRender();
@@ -329,6 +370,8 @@ var Engine = (function()
 
     Engine.prototype.replacePage = function(page)
     {
+        var page = (typeof page === 'string') ? window[page]:page;
+
         this.destroyPage();   
         this.initPage(page); 
     }
@@ -346,8 +389,8 @@ var Engine = (function()
     {
         var exemplar = new cls(declElement);
 
-        exemplar.properties = declElement.properties || [];
-        exemplar.listeners  = declElement.listeners  || [];
+        exemplar.properties = exemplar.properties || declElement.properties || [];
+        exemplar.listeners  = exemplar.listeners  || declElement.listeners  || [];
         exemplar.Engine     = this;
 
         return exemplar;
@@ -356,9 +399,9 @@ var Engine = (function()
     Engine.prototype.createElement = async function(declElement, master)
     {
         var master   = master || document.body,
-            cls      = (typeof declElement.cls !== 'string') ? declElement.cls:window[declElement.cls];
+            cls      = (typeof declElement.cls !== 'string') ? declElement.cls:window[declElement.cls],
             exemplar = this.createExemplar(cls, declElement),
-            compiled = await this.compiler.compileElement(exemplar, master);
+            compiled = await this.compileElement(exemplar, master);
 
         compiled.render();
         this.elements.push(compiled);
@@ -408,23 +451,55 @@ var Engine = (function()
 })();
 
 
-// All core elements
-var MINIBASE_ALL_ELEMENTS =
-[
-    "BasicButton",
-    "BasicDestroyEffects",
-    "BasicFloatingWindow",
-    "BasicGreed",
-    "BasicHeader",
-    "BasicPlate",
-    "BasicSearchForm",
-    "BasicTextInput",
-    "Validator"
-];
+__inheritance = function(child, parrents)
+{
+    for (var n=0; n < parrents.length; n++) 
+    {
+        var parrent = parrents[n];
 
-var MINIBASE_PRIVATE_FUNCTIONS =
-[
-    "connectBaseUttils",
-    "connectBaseElements",
-    "setAppIco"
-];
+        for (var att in parrent)
+        {
+            if (!child[att] && att !== "master") child[att] = parrent[att];
+        }
+    }
+}
+
+var MINIBASE_ENVS = 
+{
+    "miniBase":  "miniBase",
+    "minibase":  "miniBase",
+    "engine":    "miniBase",
+    "Engine":    "miniBase",
+    "MINIBASE":  "miniBase",
+    "ENGINE":    "miniBase",
+
+    "MINIBASE_PRIVATE_FUNCTIONS": 
+    [
+        "setBaseUttils",
+        "setBaseElements",
+        "setAppIco",
+        "setStyle",
+        "setUserStyles",
+        "setTitle",
+        "setPages",
+        "run"
+    ],
+    
+    "MAIL_REGEXP": /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i,
+    "FULLNAME_REGEXP": /[a-zA-Z ]+/gi,
+    
+    "MINIBASE_ALL_ELEMENTS":
+    [
+        "BasicButton",
+        "BasicDestroyEffects",
+        "BasicFloatingWindow",
+        "BasicGreed",
+        "BasicHeader",
+        "BasicPlate",
+        "BasicSearchForm",
+        "BasicTextInput",
+        "Validator",
+        "BasicDataForm",
+        "BasicRow"
+    ]
+}
