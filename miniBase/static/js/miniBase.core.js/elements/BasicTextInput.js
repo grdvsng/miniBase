@@ -10,68 +10,112 @@ var BasicTextInput = (function()
      */
     function BasicTextInput(params)
     {
-        this.listeners  = params.listeners || [];
-        this.validators = (params.validators) ? this.pushValidators(params.validators):null;
-        this.tag        = "input";
-        this.clsName    = "BasicTextInput";
-        this.label      = params.label      || null;
-        this.min_length = params.min_length || 0;
+        this.listeners   = params.listeners    || [];
+        this._validators = (params.validators) || [];
+        this.label       = params.label        || null;
+        this.validators  = [];
+        this.tag         = "input";
+        this.clsName     = "BasicTextInput";
 
-        if (params.label) this.render = this.generateLabel;
+        this._validators.push(this.generateLengthValidator(params));
+    }
+
+    BasicTextInput.prototype.generateLengthValidator = function(params)
+    {
+        var minlength = params.minlength || 0,
+            msg       = ((params.minlength_message) ? (params.minlength_message.message || MINIMUM_LENGTH_MESSAGE):MINIMUM_LENGTH_MESSAGE).replace("\$\{minlength\}", minlength);
+
+            return {
+                "msg": msg,
+                "type": "Error",
+                "minlength": minlength,
+                "conformity": false
+            };
+    }
+
+    BasicTextInput.prototype.render = function()
+    {
+        if (this.label)
+        {
+            this.generateLabel();
+        } else {
+            MINIBASE.renderElement(this);
+        }
+
+        this.pushValidators(this._validators);
     }
 
     BasicTextInput.prototype.generateLabel = function()
     {
-        var tb = document.createElement("div"),
-            lb = document.createElement("span"),
-            el = document.createElement("span");
+        var tb = document.createElement("div")
+            lb = document.createElement("span");
 
+        tb.className = this.clsName + "-Container";
         lb.className = this.clsName + "-Label";
         lb.innerHTML = this.label;
 
-        el.appendChild(this.dom);
         tb.appendChild(lb);
-        tb.appendChild(el);
+        tb.appendChild(this.dom);
 
-        this.Engine.reDom(this, tb);
         this.master.appendChild(tb);
     }
 
     BasicTextInput.prototype.pushValidators = function(validators)
     {
-        this.validators = this.validators || [];
-
         for (v=0; v < validators.length; v++)
         {
-            this.pushValidator(new Validator(validators[v]));
+            validators[v] = this.pushValidator(validators[v], true);
         }
 
-        return this.validators;
+        this.iterateGenerators();
     }
 
-    BasicTextInput.prototype.generateValidate = function(validator)
+    BasicTextInput.prototype.iterateGenerators = function()
     {
-        return function()
-        {
-            var val = this.value.replace(validator.re, "");
+        var action = this.generateValidate();
 
-            if (val !== "")
+        MINIBASE.connectListener(this.dom,
+        {
+            event: "keyup",
+            action: action
+        });
+
+        MINIBASE.connectListener(this.dom,
+        {
+            event: "focus",
+            action: action
+        });
+    }
+
+    BasicTextInput.prototype.generateValidate = function()
+    {
+        var self = this;
+
+        return function(ev)
+        {
+            for (var n=0; n < self.validators.length; n++)
             {
+                var validator  = self.validators[n],
+                    conformity = (validator.re) ? this.value.replace(validator.re, "") === "":true,
+                    minlength  = (validator.minlength === 0) ? true:this.value.length >= validator.minlength;
+
                 validator.remove();
-                validator.render(this);
-            } else {
-                validator.remove();
+
+                if (!conformity || !minlength)
+                {
+                    validator.render(this);
+                }
             }
         }
     }
 
-    BasicTextInput.prototype.pushValidator = function(validator)
+    BasicTextInput.prototype.pushValidator = function(validatorParams, massAppend)
     {
-        var action    = this.generateValidate(validator),
-            validator = {event: "keyup", action: action};
+        var validator = new Validator(validatorParams, this);
+
+        if (!massAppend) this.iterateGenerators();
 
         this.validators.push(validator);
-        this.listeners.push(validator);
 
         return validator;
     }

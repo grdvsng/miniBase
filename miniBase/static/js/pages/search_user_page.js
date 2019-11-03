@@ -63,10 +63,10 @@ var search_user_page =
         }, {
                 cls: "BasicButton",
                 innerHTML: "ADD USER",
-                
+
                 properties:
                 [{
-                    name: "id", 
+                    name: "id",
                     value: "search_user_page_add_button"
                 }],
 

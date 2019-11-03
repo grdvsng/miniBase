@@ -120,8 +120,18 @@ var ElementCompiler = (function()
     /**
      * Connect inner property on HTMLElement
      * @constructor
-     * @param {HTMLElement} element - element where connect properties
-     * @param {ElementsPropertiesList} properties
+     * @param {HTMLElement} htmlEl - element where connect properties
+     * @param {listener} listeners
+     */
+    ComponentCompiler.prototype.connectListener = function(htmlEl, listener)
+    {
+        _addEventListener(htmlEl, listener.event, listener.action);
+    }
+
+    /**
+     * Connect inner property on HTMLElement
+     * @constructor
+     * @param {HTMLElement} htmlEl - element where connect properties
      * @param {listenersList} listeners
      */
     ComponentCompiler.prototype.connectListeners = function(htmlEl, listeners)
@@ -157,7 +167,7 @@ var HTMLGataway = (function()
 
         return el;
     }
-    
+
     HTMLGataway.prototype.connectTitle = function(text)
     {
         var elem = document.createElement('title');
@@ -168,10 +178,24 @@ var HTMLGataway = (function()
         return elem;
     }
 
+    HTMLGataway.prototype.removeHTMLElement = function(dom)
+    {
+        if (dom)
+        {
+            var InnerEl = (dom.getEl) ? dom.getEl():null,
+                parent  = dom.parentNode;
+
+            if (InnerEl) InnerEl.dom = undefined;
+            if (parent)  parent.removeChild(dom);
+
+            delete dom;
+        }
+    }
+
     HTMLGataway.prototype.connectStyle = function(path)
     {
         var elem = document.createElement('link');
-       
+
         elem.href = path;
         elem.type = "text/css";
         elem.rel  = "stylesheet";
@@ -303,7 +327,7 @@ var Engine = (function()
             var page = this.config.pages[n],
                 path = this.getPath("pages/" + page + ".js"),
                 elem = this.connectScript(path);
-            
+
             elem.id = "Page-" + page;
         }
     }
@@ -318,7 +342,7 @@ var Engine = (function()
         if (this.config.ico)
         {
             var path = this.getPath(this.config.ico);
-            
+
             this.connectFavicon(path);
         }
     }
@@ -336,7 +360,7 @@ var Engine = (function()
         {
             var path = this.myDir + "/elements/" + elements[n] + ".js",
                 elem = this.connectScript(path);
-            
+
             elem.id = "Element-" + elements[n];
         }
     }
@@ -372,10 +396,10 @@ var Engine = (function()
     {
         var page = (typeof page === 'string') ? window[page]:page;
 
-        this.destroyPage();   
-        this.initPage(page); 
+        this.destroyPage();
+        this.initPage(page);
     }
-    
+
     Engine.prototype._afterRender = async function()
     {
         for (var n=0; n < this.afterRender.length; n++)
@@ -416,16 +440,21 @@ var Engine = (function()
 
     Engine.prototype.reDom = function(InnerEl, newDom)
     {
-        newDom.render = InnerEl.dom.render;
-        newDom.remove = InnerEl.dom.remove;
-        newDom.getEl  = InnerEl.dom.getEl;
+        var oldDom = InnerEl.dom;
+
+        newDom.render    = oldDom.render;
+        newDom.remove    = oldDom.remove;
+        newDom.getEl     = oldDom.getEl;
+        newDom.className = InnerEl.clsName;
+        oldDom.className = "";
+
         InnerEl.dom   = newDom;
     }
 
     Engine.prototype.createElements = async function(elements, master)
     {
         var master = master || document.body;
-        
+
         if (this.page.reverse) elements.reverse();
 
         for (var el=0; el < elements.length; el++)
@@ -484,10 +513,12 @@ var MINIBASE_ENVS =
         "setPages",
         "run"
     ],
-    
+
     "MAIL_REGEXP": /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i,
     "FULLNAME_REGEXP": /[a-zA-Z ]+/gi,
-    
+    "LOGIN_REGEXP":    /^[a-z][a-zA-Z0-9 ]{1,}/gi,
+    "PREVENT_DEFAULT": function(e) {e.preventDefault();},
+
     "MINIBASE_ALL_ELEMENTS":
     [
         "BasicButton",
@@ -500,6 +531,8 @@ var MINIBASE_ENVS =
         "BasicTextInput",
         "Validator",
         "BasicDataForm",
-        "BasicRow"
-    ]
+        "BasicContainer"
+    ],
+
+    "MINIMUM_LENGTH_MESSAGE": "Minimum length ${minlength}"
 }

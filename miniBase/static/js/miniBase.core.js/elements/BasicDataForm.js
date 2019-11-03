@@ -3,26 +3,30 @@ var BasicDataForm = (function()
     function BasicDataForm(params)
     {
         this.clsName    = "BasicDataForm";
-        this.tag        = "div";
+        this.tag        = "form";
         this.items      = [];
         this.fields     = params.fields  || [];
         this.innerHTML  = params.label ? "<div class='BasicDataForm-Label'>" + params.label + "<div>":null;
 
         this.buildFields();
-        
+
         if (params.submit) this.items.push(this.setSubmit(params.submit));
     }
-    
+
     BasicDataForm.prototype.checkRequired = function()
     {
         var fields = this.dom.getElementsByTagName("input");
- 
+
         for (var n=0; n < fields.length; n++)
         {
-            var field = fields[n];
-            
-            if (field.value === "" || field.value.onValid || field.value <= field.getEl().min_length)
+            var field = fields[n].getEl();
+
+            fields[n].dispatchEvent(new Event('keyup'));
+
+            if (field.onValid)
             {
+                field.onValid.render(fields[n], true);
+
                 return false;
             }
         }
@@ -33,7 +37,7 @@ var BasicDataForm = (function()
     BasicDataForm.prototype.setOnsubmit = function(onsubmit)
     {
         var self = this;
-        
+
         return function()
         {
             if (self.checkRequired())
@@ -51,15 +55,18 @@ var BasicDataForm = (function()
         submit.listeners  = submit.listeners  || [];
 
         submit.listeners.push({
-            event: "click", 
+            event: "click",
             action: this.setOnsubmit(submit.onSubmit)
         });
-        
+
         return submit;
     }
 
     BasicDataForm.prototype.render = function()
     {
+        this.dom.setAttribute("novalidate", true);
+
+        MINIBASE.connectListeners(this.dom, [{event: "submit", action: PREVENT_DEFAULT}])
         MINIBASE.renderElement(this);
     }
 
@@ -78,15 +85,15 @@ var BasicDataForm = (function()
         return [{
             "re": field.re,
             "msg": field.msg,
-            "type": "Error"
+            "type": "Error",
+            "only_call": true
         }];
-        
     }
 
     BasicDataForm.prototype.getProperties = function(field)
     {
         var props = [];
-        
+
         for (var att in field)
         {
             if (att !== "label" && att !== "msg" && att !== "re")
@@ -100,7 +107,7 @@ var BasicDataForm = (function()
 
         return props;
     }
-    
+
     BasicDataForm.prototype.buildFields = function()
     {
         for (var n=0; n < this.fields.length; n++)
@@ -108,15 +115,11 @@ var BasicDataForm = (function()
             var field = this.fields[n];
 
             this.items.push({
-            cls: "BasicRow",
-            items:   
-                [{
                     cls: this.getFieldType(field),
                     label: field.label,
                     properties: this.getProperties(field),
                     validators: this.getValidator(field),
-                    min_length: field.min_length
-                }]
+                    minlength: field.minlength
             });
         }
     }

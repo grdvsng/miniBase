@@ -17,9 +17,9 @@ body
     * {
         font-family: Arial, Helvetica, sans-serif;
         cursor: default;
-        
+
         * {
-            cursor: default;  
+            cursor: default;
         }
     }
 }
@@ -30,15 +30,16 @@ body
     font-size: 10pt;
     padding-top: 5px;
     padding-bottom: 5px;
+    text-align: center;
     border-radius: 5px;
     font-weight: 700;
 }
 
 #Validator-Warring
 {
-    background: rgb(208, 245, 243);
-    color:      azure;
-    border: 2px solid rgb(235, 235, 235);
+    background: rgb(238, 240, 158);
+    color:      rgb(85, 54, 28);
+    border: 2px solid rgb(46, 29, 15);
 }
 
 #Validator-Error
@@ -54,6 +55,13 @@ body
     font-size: 12pt;
     border-radius: 5px;
     padding: 5px;
+
+    * {
+        outline: 0px;
+        font-size: 12pt;
+        border-radius: 5px;
+        padding: 5px;
+    }
 }
 
 .BasicTextInput-Label
@@ -173,7 +181,7 @@ body
     text-align: center;
     border-bottom: 20px solid rgb(26, 35, 41);
 
-    .BasicHeader 
+    .BasicHeader
     {
         position: relative;
         width: 100%;
@@ -222,6 +230,13 @@ body
     @include move_eya(2s);
 }
 
+.BasicDataForm-Label
+{
+    border-bottom: 1px solid black;
+    padding: 5px;
+    background: rgb(22, 31, 36);
+}
+
 .BasicDataForm
 {
     position: absolute;
@@ -234,14 +249,20 @@ body
     top: 35%;
     border-top: 10px solid black;
 
-    .BasicButton 
+    .BasicTextInput-Container
+    {
+        margin-top: 5%;
+        margin-bottom: 5%;
+    }
+
+    .BasicButton
     {
         text-align: right;
         position: relative;
         margin-left: 0;
         margin-right: 0;
         width: 100%;
-        background-color:  rgb(31, 44, 51);
+        background: rgb(22, 31, 36);
         border: none;
         padding: 10px;
         text-decoration: azure;
@@ -249,6 +270,20 @@ body
     }
 }
 
+.BasicTextInput-Container
+{
+    position: relative;
+
+    left: 5%;
+    right: 5%;
+
+    width: 90%;
+
+    * {
+        display: inline-block;
+        width: 48%;
+    }
+}
 .BasicGreed-Row
 {
     background-color: white;
@@ -258,15 +293,14 @@ body
 .BasicRow
 {
     position: relative;
-    margin-left: 10%;
-    margin-right: 10%;
-    width: 80%;
-    display: table;
+    margin-left: 2%;
+    margin-right: 2%;
+    width: 96%;
 
     * {
         float: right;
-
         display: table-row;
+
         * {
             display: table-cell;
             float: left;

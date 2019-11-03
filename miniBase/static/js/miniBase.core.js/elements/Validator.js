@@ -4,13 +4,16 @@
  */
 var Validator = (function()
 {
-    function Validator(params)
+    function Validator(params, master)
     {
         this.id         = "Validator-" + params.type;
         this.clsName    = "Validator";
         this.message    = params.msg;
         this.re         = params.re;
-        this.min_length = params.min_length;
+        this.master     = master;
+        this.only_call  = (params.only_call  !== undefined) ? params.only_call:false;
+        this.conformity = (params.conformity !== undefined) ? params.conformity:true;
+        this.minlength  = (params.minlength  !== undefined) ? params.minlength:0;
     }
 
     Validator.prototype.generateElement = function(triggerRect)
@@ -19,7 +22,7 @@ var Validator = (function()
 
         elem.className   = this.clsName;
         elem.id          = this.id;
-        elem.style.top   = triggerRect.bottom + 2;
+        elem.style.top   = triggerRect.bottom + 2.5;
         elem.style.left  = triggerRect.left;
         elem.style.width = triggerRect.width;
         elem.innerHTML   = this.message;
@@ -29,33 +32,29 @@ var Validator = (function()
 
     Validator.prototype.remove = function()
     {
-        if (this.trigger) 
-        {
-            this.trigger.onValid = false;
-        }
+        MINIBASE.removeHTMLElement(document.getElementById(this.id));
+        MINIBASE.removeHTMLElement(this.dom);
 
-        if (this.dom)
-        {
-            this.dom.parentNode.removeChild(this.dom);
-
-            delete this.dom;
-        }
+        this.master.onValid = (this.master.onValid === this) ? false:this.master.onValid;
     }
 
-    Validator.prototype.render = function(trigger)
+    Validator.prototype.render = function(trigger, call)
     {
-        var oldV = document.getElementById(this.id),
-            rect = trigger.getBoundingClientRect(),
-            dom  = this.generateElement(rect);
-        
-        this.trigger         = trigger;
-        this.trigger.onValid = true;
+        if (this.master.onValid) this.master.onValid.remove();
 
-        if (oldV) oldV.parentNode.removeChild(oldV);
-        document.body.appendChild(dom);
+        if (call || !this.only_call)
+        {
+            var rect = trigger.getBoundingClientRect(),
+                dom  = this.generateElement(rect);
 
-        this.trigger = trigger;
-        this.dom = dom;
+            this.trigger  = trigger;
+
+            document.body.appendChild(dom);
+
+            this.dom = dom;
+        }
+
+        this.master.onValid = this;
     }
 
     return Validator;

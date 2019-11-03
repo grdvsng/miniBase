@@ -2,12 +2,12 @@ var push_user_page =
 {
     reverse: false,
     cls: "push_user_page",
-    
+
     items: [{
         cls: "BasicHeader",
         keepScroll: true,
         label: "miniBase",
-        
+
         properties:
         [{
             "name": "title",
@@ -34,9 +34,9 @@ var push_user_page =
                 name: "user_name",
                 required: true,
                 type: "text",
-                msg: "Incorect name format",
-                re: FULLNAME_REGEXP,
-                min_length: 5
+                msg: "Incorect login format",
+                re: LOGIN_REGEXP,
+                minlength: 5
             }, {
                 label: "Mail",
                 name: "user_mail",
@@ -44,10 +44,10 @@ var push_user_page =
                 type: "text",
                 msg: "Incorect mail format",
                 re: MAIL_REGEXP,
-                min_length: 5
+                minlength: 5
             }],
 
-            submit: 
+            submit:
             {
                 cls: "BasicButton",
                 innerHTML: "ADD USER",
