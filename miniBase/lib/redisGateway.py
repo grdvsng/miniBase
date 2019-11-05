@@ -224,7 +224,7 @@ class RedisGateway(Redis):
 
 '''
 r = RedisGateway({})
-u = r.createTable("users_name_mail", {"admin": "admin@minibase.com"})
+u = r.createTable("users_name_mail", {"admin": "grdvsnf@gmail.com"})
 r.pushInTable("users_name_mail" , "as", "sassa")
 t = r.getTable("users_name_mail")
 q = r.query(**{
@@ -236,3 +236,6 @@ q = r.query(**{
 
 print(q)
 '''
+
+r = RedisGateway({});
+u = r.createTable("users_name_mail", {"admin": "grdvsnf@gmail.com"});
