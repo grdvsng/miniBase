@@ -44,9 +44,9 @@ var ElementCompiler = (function()
 
     ComponentCompiler.prototype.clearElementClone = function(elem)
     {
-        if (elem.clone) 
+        if (elem.clone)
         {
-            elem.clone.parentNode.removeChild(elem.clone);
+            if (elem.clone.parentNode) elem.clone.parentNode.removeChild(elem.clone);
         }
 
         elem.clone = undefined;
@@ -55,7 +55,7 @@ var ElementCompiler = (function()
     ComponentCompiler.prototype.setElementClone = function(elem)
     {
         this.clearElementClone(elem);
-        
+
         elem.clone           = elem.dom.cloneNode();
         elem.clone.innerHTML = elem.dom.innerHTML;
         elem.clone.id        = (elem.dom.id || elem.clsName) + "-Clone";
@@ -383,13 +383,13 @@ var Engine = (function()
     Engine.prototype.initPage = async function(page)
     {
         this.elements     = [];
-        this.afterRender  = [];
+        this.afterRender  = page.onReady || [];
         this.page         = (typeof page === 'string') ? window[page]:page;
         this.page.reverse = (this.page.reverse !== undefined) ? this.page.reverse:false;
         document.body.className = this.page.cls;
 
         await this.createElements(page.items || []);
-        this._afterRender();
+        this._afterRender(page);
     }
 
     Engine.prototype.replacePage = function(page)
@@ -405,6 +405,7 @@ var Engine = (function()
         for (var n=0; n < this.afterRender.length; n++)
         {
             var schedule = this.afterRender[n];
+
             await schedule();
         }
     }
@@ -465,15 +466,42 @@ var Engine = (function()
         }
     }
 
-    Engine.prototype.makeRequest = function(url, method, innerQl)
+    Engine.prototype.requestParser = function(xhr, afterResponse)
     {
-        var xmlHttp = new XMLHttpRequest();
+        return function()
+        {
+            if (xhr.readyState != 4) return;
 
-        xmlHttp.open(method.toUpperCase(), url);
-        xmlHttp.setRequestHeader("Content-Type", "application/json");
-        xmlHttp.send(JSON.stringify((innerQl)));
+            if (xhr.status != 200)
+            {
+              console.log(xhr.status + ': ' + xhr.statusText);
+            } else {
+                console.log(xhr.responseText);
 
-        return xmlHttp.response;
+                if (afterResponse)
+                {
+                    afterResponse(xhr);
+                }
+            }
+        }
+    }
+
+    Engine.prototype.makeRequest = function(url, method, innerQl, _async, afterResponse)
+    {
+        var xhr  = new XMLHttpRequest();
+
+        xhr.open(method, url, (_async) ? true:false);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify(innerQl));
+
+        if (_async)
+        {
+            xhr.onreadystatechange = this.requestParser(xhr, afterResponse);
+
+            return xhr;
+        } else {
+            return this.requestParser(xhr, afterResponse)();
+        }
     }
 
     return Engine;

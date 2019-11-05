@@ -1,18 +1,21 @@
+from flask   import Flask
 from os.path import dirname
-from sys import path as sysPath
+from sys     import path as sysPath
 
 sysPath.append(dirname(__file__))
-from lib          import CoreHandler, osPath, getJsonContentFromFile
-from flaskGateway import FlaskGateway
+from lib            import CoreHandler, osPath, getJsonContentFromFile, RedisGateway
+from requestHandler import RequestHandler
 
 
-class Application(FlaskGateway):
-
+class MiniBase(object):
 	baseDir = osPath.dirname(__file__)
 	_config = {}
+	flask   = Flask(__name__)
+	config  = flask.config
+	run     = flask.run
 
 	def __init__(self, serverCfgPAth, logCfgPath):
-		super().__init__()
+		RequestHandler(self)
 
 		self._configPAth = osPath.join(self.baseDir, *osPath.split(serverCfgPAth))
 		self.logParams   = osPath.join(self.baseDir, *osPath.split(logCfgPath))
@@ -23,11 +26,23 @@ class Application(FlaskGateway):
 		}]
 
 		self._initConfig()
+		self._connectToBase()
 
 	def _initConfig(self):
 		self._setAttrsByJsonFiles()
 		self.initBasicConfig()
 		self.initContentConfig()
+
+	def _connectToBase(self):
+		if not self._config["base"]:
+			self.handler("Base config not found...", "Server not stoped", 1)
+		else:
+			try:
+				self.BaseConnector = RedisGateway(self._config["base"]);
+				self.handler("Base connected!", "", 2)
+
+			except:
+				self.handler("Base server not availed!", "Critical error.", 0)
 
 	def _setAttrsByJsonFiles(self):
 		for item in self.jsonFiles:

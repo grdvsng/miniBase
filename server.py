@@ -1,9 +1,9 @@
-from miniBase import Application
+from miniBase import MiniBase
 
 
 serverCfgPAth = "config.json"
 logCfgPath    = "lib/log_config.json" # not require
-app           = Application(serverCfgPAth, logCfgPath)
+app           = MiniBase(serverCfgPAth, logCfgPath)
 
 if __name__ == '__main__':
     FLASK_APP=app

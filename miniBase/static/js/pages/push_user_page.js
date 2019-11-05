@@ -51,9 +51,35 @@ var push_user_page =
             {
                 cls: "BasicButton",
                 innerHTML: "ADD USER",
-                onSubmit: function()
+                onSubmit: function(form)
                 {
-                    console.log(777);
+                    var fields = form.getData(),
+                        query  =
+                        {
+                            tables: "users_name_mail",
+                            method: "push",
+                            params: [{
+                                key: fields[0].value,
+                                val: fields[1].value
+                            }]
+                        };
+
+                    MINIBASE.makeRequest(
+                        "/rest/api/pushUsers",
+                        "post",
+                        query,
+                        true,
+                        function(xhr)
+                        {
+                            if (!xhr.response.match("0"))
+                            {
+                                alert("User '" + fields[0].value + "'  exists!");
+                                console.log("full response: " + xhr.response);
+                            } else {
+                                alert("User created!");
+                                form.clear.apply(form);
+                            }
+                    });
                 }
             }
         }]

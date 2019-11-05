@@ -7,13 +7,13 @@
 import warnings
 import json
 
-from os           import path as osPath
-from datetime     import datetime
-from sys          import path as sysPath
-from sys       	  import path as sysPath
-from redisGateway import RedisGateway
+from os       import path as osPath
+from datetime import datetime
+from sys      import path as sysPath
+from sys      import path as sysPath
 
 sysPath.append(osPath.dirname(__file__))
+from redisGateway import RedisGateway
 
 
 def getJsonContentFromFile(path):

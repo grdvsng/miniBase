@@ -33,6 +33,39 @@ var BasicGreed = (function()
         return td;
     }
 
+    BasicGreed.prototype.clearRows = function(xhr, clearOld)
+    {
+        clean = []
+
+        for (n=0; n < this.rows.length; n++)
+        {
+            row = this.rows[n];
+
+            if (row.className !== this.clsName + "-Row-Head")
+            {
+                row.parentNode.removeChild(row);
+            } else {
+                clean.push(row);
+            }
+        }
+
+        this.rows = clean;
+    }
+
+    BasicGreed.prototype.pathTableFromXhrResponse = function(xhr, clearOld)
+    {
+        var table = JSON.parse(xhr.response);
+
+        if (clearOld) this.clearRows()
+
+        for (var n=0; n < table.length; n++)
+        {
+            var row = this.generateRow(table[n]);
+
+            this.dom.appendChild(row);
+        }
+    }
+
     BasicGreed.prototype.generateRow = function(arr, clsName)
     {
         var row = document.createElement("div");
@@ -42,6 +75,8 @@ var BasicGreed = (function()
         {
             row.appendChild(this.generateCell(arr[n]));
         }
+
+        this.rows.push(row);
 
         return row;
     }
@@ -56,7 +91,7 @@ var BasicGreed = (function()
 
     BasicGreed.prototype.appendDate = function(table)
     {
-        
+
         for (var n=0; n < table.length; n++)
         {
             var row = table[n];

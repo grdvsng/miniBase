@@ -1,15 +1,25 @@
 {
-    "connection": {
+    "connection":
+    {
         "host": "localhost",
-        "port": "8080"
+        "port": "8082"
     },
 
-    "basic": {
+    "base":
+    {
+        "host": "localhost",
+        "port": 6379,
+        "db":   1
+    },
+
+    "basic":
+    {
         "CSRF_ENABLED": true,
         "SECRET_KEY":   "qwerty1234"
     },
 
-    "files": {
+    "files":
+    {
         "template_folder": "templates",
         "static_folder":   "static"
     }

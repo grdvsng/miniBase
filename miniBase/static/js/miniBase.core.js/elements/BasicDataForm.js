@@ -13,9 +13,17 @@ var BasicDataForm = (function()
         if (params.submit) this.items.push(this.setSubmit(params.submit));
     }
 
+    BasicDataForm.prototype.clear = function()
+    {
+        for (var n=0; n < this.fields.length; n++)
+        {
+            this.fields[n].value = "";
+        }
+    }
+
     BasicDataForm.prototype.checkRequired = function()
     {
-        var fields = this.dom.getElementsByTagName("input");
+        var fields = this.fields;
 
         for (var n=0; n < fields.length; n++)
         {
@@ -42,9 +50,7 @@ var BasicDataForm = (function()
         {
             if (self.checkRequired())
             {
-                return onsubmit();
-            } else {
-                console.log(0);
+                return onsubmit(self);
             }
         }
     }
@@ -62,12 +68,34 @@ var BasicDataForm = (function()
         return submit;
     }
 
+    BasicDataForm.prototype.getData = function()
+    {
+        var data = [];
+
+        for (var n=0; n < this.fields.length; n++)
+        {
+            data.push({
+                "name": this.fields[n].name,
+                "value": this.fields[n].value,
+            })
+        }
+
+        return data;
+    }
+
+    BasicDataForm.prototype._getTrueFields = function()
+    {
+        this.fields = this.dom.getElementsByTagName("input");
+    }
+
     BasicDataForm.prototype.render = function()
     {
         this.dom.setAttribute("novalidate", true);
 
         MINIBASE.connectListeners(this.dom, [{event: "submit", action: PREVENT_DEFAULT}])
         MINIBASE.renderElement(this);
+
+        this._getTrueFields();
     }
 
     BasicDataForm.prototype.getFieldType = function(field)
@@ -113,14 +141,16 @@ var BasicDataForm = (function()
         for (var n=0; n < this.fields.length; n++)
         {
             var field = this.fields[n];
+            this.fields[n] =
+            {
+                cls: this.getFieldType(field),
+                label: field.label,
+                properties: this.getProperties(field),
+                validators: this.getValidator(field),
+                minlength: field.minlength
+            }
 
-            this.items.push({
-                    cls: this.getFieldType(field),
-                    label: field.label,
-                    properties: this.getProperties(field),
-                    validators: this.getValidator(field),
-                    minlength: field.minlength
-            });
+            this.items.push(this.fields[n]);
         }
     }
 

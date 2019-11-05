@@ -2,12 +2,32 @@ var search_user_page =
 {
     reverse: false,
     cls: "search_user_page",
-    
+    onReady: [function()
+    {
+        var query =
+        {
+            tables:  ["users_name_mail"],
+            method: "select",
+            params: "key like '[*]{0,}'"
+        },
+            table = document.getElementById("UsersGreed").getEl();
+
+        MINIBASE.makeRequest(
+            "/rest/api/getUsers",
+            "post",
+            query,
+            true,
+            function(xhr)
+            {
+                table.pathTableFromXhrResponse.apply(table, [xhr]);
+        });
+    }],
+
     items: [{
         cls: "BasicHeader",
         keepScroll: true,
         label: "miniBase",
-        
+
         properties:
         [{
             "name": "title",
@@ -27,7 +47,7 @@ var search_user_page =
 
         items: [{
             cls: "BasicSearchForm",
-            properties: 
+            properties:
             [{
                 name: "id",
                 value: "#SearchForm1"
@@ -39,13 +59,13 @@ var search_user_page =
 
                 properties:
                 [{
-                    name: "placeholder", 
+                    name: "placeholder",
                     value: "Username"
                 }, {
-                    name: "title",       
+                    name: "title",
                     value: "Search user in base"
                 }, {
-                    name: "required",    
+                    name: "required",
                     value: true
                 }],
 
@@ -54,12 +74,40 @@ var search_user_page =
                     "re": /[a-zA-Z@.0-9_]+/gi,
                     "msg": "Wrong format for name or mail address...",
                     "type": "Warring"
+                }],
+
+                "listeners": [{
+                    "event": "keyup",
+                    "action": function()
+                    {
+                        var query =
+                        {
+                            tables:  ["users_name_mail"],
+                            method: "select",
+                            params: "key like '" + this.value + "' or val like '" + this.value + "'"
+                        },
+                            table = document.getElementById("UsersGreed").getEl();
+
+                        MINIBASE.makeRequest(
+                            "/rest/api/getUsers",
+                            "post",
+                            query,
+                            true,
+                            function(xhr)
+                            {
+                                table.pathTableFromXhrResponse.apply(table, [xhr, true]);
+                        });
+                    }
                 }]
             }]
         }, {
             cls: "BasicGreed",
             format: ["Name", "Mail"],
-            prefill: [["<br />", "<br />"]]
+            properties:
+            [{
+                name: "id",
+                value: "UsersGreed"
+            }]
         }, {
                 cls: "BasicButton",
                 innerHTML: "ADD USER",
