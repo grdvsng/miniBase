@@ -160,6 +160,7 @@ class RedisGateway(Redis):
 				return -2
 			else:
 				self.hset(tableName, key, value)
+				self.save()
 
 				return 0
 		else:
@@ -184,6 +185,8 @@ class RedisGateway(Redis):
 			if self.getTable(tableName) == -1:
 				return -4
 			else:
+				self.save()
+
 				return 0
 
 		else:
@@ -207,6 +210,8 @@ class RedisGateway(Redis):
 			if self.getFromTable(tableName, key) != -3:
 				return -2
 			else:
+				self.save()
+
 				return 0
 
 	def removeTable(self, tableName):
@@ -217,6 +222,8 @@ class RedisGateway(Redis):
 			self._removeTable(tableName)
 
 			if self.getTable(tableName) == -1:
+				self.save()
+
 				return 0
 			else:
 				return -5
@@ -236,6 +243,3 @@ q = r.query(**{
 
 print(q)
 '''
-
-r = RedisGateway({});
-u = r.createTable("users_name_mail", {"admin": "grdvsnf@gmail.com"});
