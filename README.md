@@ -21,13 +21,13 @@
 1. Download distributive
 2. Open terminal
 	```bash
-	cd ./application_template/miniBase;
+	cd ./application-template/miniBase;
 	sh ./install.sh;
 	```
 3. Make your application =)
 4. In app folder you find "folder|filename.help.html" it's and example application(test_application) will help you
 > For install test application:
 >	```bash
->	cd "./test_application/miniBase";
+>	cd "./test-application/miniBase";
 >	sh ./install.sh;
 >	```
