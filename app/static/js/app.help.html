@@ -1,0 +1,71 @@
+<html>
+    <head>
+        <title>
+            miniBase app.js
+        </title>
+        <link rel="stylesheet" href="../../../highlight/styles/github.css">
+        <script src="../../../highlight/highlight.pack.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script>
+    </head>
+    <body>
+        <h2>
+            App
+        </h2>
+        <h4>
+            <bold>Description: </bold>
+            Configuration for JS part of Application
+        </h4>
+        <pre>
+            <code lang="JavaScript">
+                // Never rename this
+                var app =
+                {
+                    /**
+                        Index page title
+                    */
+                    "name": "MiniBase",
+                    /**
+                        Index page icon
+                    */
+                    "ico": "media/favicon.ico",
+
+                    /**
+                        Write here elements what you using or
+                        write null and elements will connecting
+                    */
+                    "elements": null,
+
+                    /**
+                        Write here page name from page folder (!without .js)
+                        all page need create in ./page folder
+                    */
+                    "pages":
+                    [
+                        "index_page"
+                    ],
+
+                    /**
+                        If you want connect your oun style
+                        create ./styles folder
+                        and push your css files
+                        in list use only file name
+                    */
+                    "my_styles":
+                    [
+                        "main"
+                    ],
+
+                    /**
+                        Page will be open with index,
+                        can past null ann will use first page from pages.
+                    */
+                    "index": "index_page",
+                    /**
+                        Application main file, from miniBase.core.js/styles
+                    */
+                    "style": "default",
+                }
+        </code>
+        </pre>
+    </body>
+<html>

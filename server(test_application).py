@@ -1,4 +1,4 @@
-from app import MiniBase
+from test_application import MiniBase
 
 
 serverCfgPAth = "config.json"
