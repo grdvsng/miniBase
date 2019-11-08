@@ -3,6 +3,18 @@
 
 #### A library for creating small corporate services using Flask, miniBase.js library(for creating single page applications) and Redis(other will append soon).
 
+#### used modules and application
+>1. Python
+>    1. Flask
+>    2. json
+>    3. Redis
+>    4. os
+>    5. sys
+>    6. warring
+>2. JavaScript
+>    1. highlight(help files formatter)
+>3. Redis
+
 ## Windows installation in process
 
 ## Linux installation
