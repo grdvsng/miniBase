@@ -69,7 +69,7 @@ cd $basicUrl
 logger "Base preinstalation"
 gnome-terminal -x sh -c ". ./start_redis.sh; bash"
 logger "Base configurate"
-python3 ./install_db_presetting.py
+python3 ./demo_presetting.py
 
 
 #Continue
