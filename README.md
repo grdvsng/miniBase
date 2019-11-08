@@ -18,11 +18,16 @@
 ## Windows installation in process
 
 ## Linux installation
-1. Download 
+1. Download distributive
 2. Open terminal
 	```bash
-	cd ./miniBase;
+	cd ./application_template/miniBase;
 	sh ./install.sh;
 	```
-3. Run ./start_test.sh if all will working can start make your application in (in miniBase/app)
-4. In app folder you find "folder|filename.help.html" it's and example application will help you
+3. Make your application =)
+4. In app folder you find "folder|filename.help.html" it's and example application(test_application) will help you
+> For install test application:
+>	```bash
+>	cd "./test_application/miniBase";
+>	sh ./install.sh;
+>	```
