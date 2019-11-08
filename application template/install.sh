@@ -66,10 +66,12 @@ sudo cp "src/redis-server" /usr/local/bin/;
 sudo cp "src/redis-cli" /usr/local/bin/;
 cd $basicUrl
 
-logger "Base preinstalation"
+logger "TestBase preinstalation"
 gnome-terminal -x sh -c ". ./start_redis.sh; bash"
-logger "Base configurate"
-python3 ./demo_presetting.py
+logger "TestBase configurate"
+cd ./test_application/
+python3 db_presetting.py
+cd $basicUr
 
 
 #Continue
