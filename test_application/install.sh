@@ -5,6 +5,10 @@ logUrl="./logs/install.log"
 basicFiles=("./temp" "./redis-5.0.5" "./venv")
 basicUrl=$PWD
 
+if ! [ -d "./logs/" ]; then
+    mkdir "./logs/"
+fi
+
 logger()
 {
     msg="
@@ -13,6 +17,7 @@ logger()
 'Event': '$1'
 ------------------------------------
 "
+    sleep 5
 
     clear
 
@@ -67,16 +72,15 @@ sudo cp "src/redis-cli" /usr/local/bin/;
 cd $basicUrl
 
 logger "TestBase preinstalation"
-gnome-terminal -x sh -c ". ./start_redis.sh; bash"
+gnome-terminal -x sh -c ". ./bin/start_redis.sh; bash"
 logger "TestBase configurate"
-cd ./test_application/
-python3 db_presetting.py
-cd $basicUr
+cd "redis-5.0.5"
+src/redis-cli HSET myhash admin "grdvsng@gmail.com"
 
 
 #Continue
 logger "Continue"
-. ./stop_redis.sh
+. ./bin/stop_redis.sh
 cd $basicUrl
 deactivate
 

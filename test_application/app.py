@@ -1,5 +1,4 @@
-from test_application import MiniBase
-
+from app import MiniBase
 
 serverCfgPAth = "config.json"
 logCfgPath    = "lib/log_config.json" # not require
