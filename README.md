@@ -11,9 +11,7 @@
 >    4. os
 >    5. sys
 >    6. warring
->2. JavaScript
->    1. highlight(help files formatter)
->3. Redis
+>2. Redis
 
 ## Windows installation in process
 
