@@ -267,6 +267,11 @@ var Engine = (function()
         throw new Error("Core file renamed...");
     }
 
+    Engine.prototype.reload = function(removeCash)
+    {
+        (location) ? location.reload(removeCash):window.location.reload(removeCash);
+    }
+
     Engine.prototype.onStart = function()
     {
         for (var n=0; n < MINIBASE_PRIVATE_FUNCTIONS.length; n++)

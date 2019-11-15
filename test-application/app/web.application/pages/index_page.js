@@ -13,7 +13,7 @@ var index_page =
         items: [{
             cls: "BasicFloatingWindow",
 
-            items: 
+            items:
             [{
                 cls: "BasicHeader",
                 label: "miniBase"
