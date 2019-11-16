@@ -68,21 +68,15 @@ logger "Install redis"
 cd "redis-5.0.5"
 make
 sudo cp "src/redis-server" /usr/local/bin/
+sudo cp "src/redis-cli"  /usr/local/bin/
 sudo cp "src/redis-cli" /usr/local/bin/
-sudo cp "src/redis-cli" /usr/local/bin/
-cd $basicUrl
 
+
+#Preseting and continue
 logger "TestBase preinstalation"
-
-gnome-terminal -x sh -c "redis-server"
-
-logger "TestBase configurate"
+redis-server &
 redis-cli HSET "users_name_mail" "admin" "grdvsng@gmail.com"
-redis-cli shutdown
 
-
-#Continue
 logger "Continue"
 cd $basicUrl
-deactivate
-
+. stop.sh
