@@ -1,82 +1,115 @@
 #!/bin/bash
 
-redisUrl="http://download.redis.io/releases/redis-5.0.5.tar.gz";
-logUrl="./logs/install.log"
-basicFiles=("./temp" "./redis-5.0.5" "./venv")
-basicUrl=$PWD
-
-if ! [ -d "./logs/" ]; then
-    mkdir "./logs/"
-fi
-
-logger()
+__logger()
 {
+    logUrl="$basicPath/logs/install.log"
     msg="
-'user': '$USER'
-'Time': '`date -u`'
-'Event': '$1'
-------------------------------------
-"
-    sleep 5
+        'user': '$USER'
+        'Time': '`date -u`'
+        'Event': '$1'
+        ------------------------------------
+    "
 
+    sleep 2
     clear
 
     printf "$msg"
     printf "$msg" >> $logUrl
 
-    sleep 5
+    if [[ $2 == 1 ]]; then
+        exit
+    fi
 }
 
+rm_old_instalation()
+{
+    basicFiles=$1
 
-#Remove old instalation
-for item in ${basicFiles[*]}; do
-    if [ -d $item ]; then
-        rm -R $item
-        logger "Remove: $item"
+    . stop.sh
+
+    for item in ${basicFiles[*]}; do
+        if [ -d $item ]; then
+            rm -R $item || __logger "Can't Remove: $item" 1
+            __logger "Remove: $item"
+        fi
+    done
+}
+
+mk_log_dir()
+{
+    if ! [ -d "./logs/" ]; then
+        mkdir "./logs/" || __logger "Error on log dir creation!" 1
     fi
-done
+}
 
+python_setup()
+{
+    python3 -V || sudo apt install python3 || __logger "Error on python instalation!" 1
+    pip3 -V || sudo apt-get install python3-pip || __logger "Error on pip instalation!" 1
+}
 
-#Virtual env install
-logger "Install python3-pip"
-sudo apt-get install python3-pip
+install_venv()
+{
+    sudo pip3 install virtualenv || __logger "Error on venv instalation!" 1
+    virtualenv venv || __logger "Error on venv creation!" 1
+    source ./venv/bin/activate || __logger "Error on venv activate!" 1
 
-logger "Install virtualenv"
-sudo pip3 install virtualenv
+    pip3 install redis || pip install redis || __logger "Error on redis instalation!" 1
+    pip3 install flask || pip install flask || __logger "Error on flask instalation!" 1
+}
 
-logger "Create virtualenv"
-virtualenv venv
-source ./venv/bin/activate
+install_redis()
+{
+    redisUrl=$1
 
-logger "Install plugins"
-pip3 install redis || pip install redis
-pip3 install flask || pip install flask
+    mkdir "./temp"
+    wget $redisUrl -O "$PWD/temp/redis.gz" || __logger "Error on redis download!" 1
+    tar --extract -f "$PWD/temp/redis.gz" -C "$PWD" || __logger "Error on redis extract!" 1
+    rm -R "$PWD/temp"
 
+    cd "redis-5.0.5"
+    make
 
-#Redis install
-logger "Download redis"
-mkdir "./temp";
-wget $redisUrl -O "$PWD/temp/redis.gz";
+    sudo cp "src/redis-server" /usr/local/bin/
+    sudo cp "src/redis-cli" /usr/local/bin/
+    sudo cp "src/redis-cli" /usr/local/bin/
+}
 
-logger "Extract redis"
-tar --extract -f "$PWD/temp/redis.gz" -C "$PWD";
+redis_generate_table_for_test_application()
+{
+    if [[ $1 != "wait" ]]; then
+        . stop
+        redis-server &
+    fi
 
-logger "Remove temp files for redis"
-rm -R "$PWD/temp";
+    if [[ $(pidof redis-server) == "" ]]; then
+        sleep 5
+        start_redis "wait"
+    else
+        # for 1 start
+        if [[ $(redis-cli HGET "users_name_mail" "admin") != *"grdvsng@gmail.com"* ]]; then
+            redis-cli HSET "users_name_mail" "admin" "grdvsng@gmail.com"
+        fi
+    fi
+}
 
-logger "Install redis"
-cd "redis-5.0.5"
-make
-sudo cp "src/redis-server" /usr/local/bin/
-sudo cp "src/redis-cli"  /usr/local/bin/
-sudo cp "src/redis-cli" /usr/local/bin/
+#basic cfg
+basicFiles=("./temp" "./redis-5.0.5" "./venv")
+redisUrl="http://download.redis.io/releases/redis-5.0.5.tar.gz";
+basicPath=$PWD
 
-
-#Preseting and continue
-logger "TestBase preinstalation"
-redis-server &
-redis-cli HSET "users_name_mail" "admin" "grdvsng@gmail.com"
-
-logger "Continue"
-cd $basicUrl
-. stop.sh
+__logger "Remove old instalation files"
+rm_old_instalation $basicFiles
+__logger "Create log dir"
+mk_log_dir
+__logger "Install Python"
+python_setup
+__logger "Install Venv"
+install_venv
+__logger "Install Redis"
+install_redis $redisUrl
+__logger "Generate test application table"
+redis_generate_table_for_test_application
+__logger "Continue"
+cd $basicPath
+. stop

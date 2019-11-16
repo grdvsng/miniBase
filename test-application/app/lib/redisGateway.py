@@ -227,19 +227,3 @@ class RedisGateway(Redis):
 				return 0
 			else:
 				return -5
-
-
-'''
-r = RedisGateway({})
-u = r.createTable("users_name_mail", {"admin": "grdvsnf@gmail.com"})
-r.pushInTable("users_name_mail" , "as", "sassa")
-t = r.getTable("users_name_mail")
-q = r.query(**{
-	"tables": ["users_name_mail"],
-	"method": "select",
-	"params":
-		"val like 'admin' or key like 'admin'",
-})
-
-print(q)
-'''
