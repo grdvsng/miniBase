@@ -28,8 +28,8 @@ rm_old_instalation()
     . stop.sh
 
     for item in ${basicFiles[*]}; do
-        if [ -d $item ]; then
-            rm -R $item || __logger "Can't Remove: $item" 1
+        if [ -d $item ] || [ -f $item ] ; then
+            rm -R $item || rm $item || __logger "Can't Remove: $item" 1
             __logger "Remove: $item"
         fi
     done
@@ -94,7 +94,7 @@ redis_generate_table_for_test_application()
 }
 
 #basic cfg
-basicFiles=("./temp" "./redis-5.0.5" "./venv")
+basicFiles=("./temp" "./redis-5.0.5" "./venv" "dump.rdb")
 redisUrl="http://download.redis.io/releases/redis-5.0.5.tar.gz";
 basicPath=$PWD
 
@@ -112,4 +112,4 @@ __logger "Generate test application table"
 redis_generate_table_for_test_application
 __logger "Continue"
 cd $basicPath
-. stop
+. stop.sh

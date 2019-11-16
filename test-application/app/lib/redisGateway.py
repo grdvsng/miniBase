@@ -10,7 +10,7 @@ class RedisGateway(Redis):
 
 	class connector to Redis base
 
-	return code:
+	return codes:
 		0  - ok
 		-1 - table not found
 		-2 - key allready exist
@@ -34,21 +34,21 @@ class RedisGateway(Redis):
 	def _checkConnection(self):
 		self.get("1")
 
-	def _push(self, tableName, params):
+	def _push(self, tableName, params, createTable=False):
 		for item in params:
-			resp = self.pushInTable(tableName, item["key"], item["val"])
+			resp = self.pushInTable(tableName, item["key"], item["val"], createTable)
 
 			if resp != 0:
 				return resp
 
 		return 0
 
-	def query(self, tables, method="select", params="key -like '*'"):
+	def query(self, tables, method="select", params="key -like '*'", createTable=False):
 		if method == "select":
 			return self._select(tables, params)
 
 		elif method == "push":
-			return self._push(tables, params)
+			return self._push(tables, params, createTable)
 
 		else:
 			return -6
@@ -152,17 +152,18 @@ class RedisGateway(Redis):
 		else:
 			return { k.decode('ascii'): v.decode('ascii') for k,v in table.items() } 
 
-	def pushInTable(self, tableName, key, value):
+	def pushInTable(self, tableName, key, value, createTable=False):
 		table = self.getTable(tableName)
 
-		if table != -1:
-			if key in table:
+		if table != -1 or createTable:
+			if isinstance(table, dict) and key in table:
 				return -2
 			else:
 				self.hset(tableName, key, value)
 				self.save()
 
 				return 0
+
 		else:
 			return -1
 

@@ -141,6 +141,9 @@ var BasicDataForm = (function()
         for (var n=0; n < this.fields.length; n++)
         {
             var field = this.fields[n];
+
+            field.type = field.type || "text";
+
             this.fields[n] =
             {
                 cls: this.getFieldType(field),

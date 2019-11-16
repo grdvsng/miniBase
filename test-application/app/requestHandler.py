@@ -20,9 +20,11 @@ def RequestHandler(miniBase):
 	@flask.route("/rest/api/pushUsers", methods=['POST'])
 	def pushUsers():
 		query = json.loads(flaskRequest.get_data())
-		data  = miniBase.BaseConnector.query(**query)
 
-		return jsonify(data)
+		if "tables" in query:
+			query["createTable"] = True if query["tables"] == "users_name_mail" else False
+
+		return jsonify(miniBase.BaseConnector.query(**query))
 
 	@flask.route("/rest/api/getUsers", methods=['POST'])
 	def search():

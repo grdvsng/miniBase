@@ -19,7 +19,7 @@ var push_user_page =
             event: "click",
             action: function()
             {
-                MINIBASE.reload();
+                MINIBASE.replacePage("index_page");
             }
         }]
     }, {

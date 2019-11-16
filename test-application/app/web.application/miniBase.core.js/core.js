@@ -320,7 +320,6 @@ var Engine = (function()
         window.onload = function()
         {
             var page = window[(self.config.index || self.config.pages[0])];
-
             self.initPage(page);
         }
     }
@@ -375,21 +374,35 @@ var Engine = (function()
         this.connectScript(this.utillsPath);
     }
 
+    Engine.prototype.destroyPageWithoutEffect = function()
+    {
+        for (var n=0; n < this.elements.length; n++)
+        {
+            var elem = this.elements[n];
+
+            elem.remove();
+        }
+
+        document.body.innerHTML = "";
+        document.body.clsName   = "";
+        this.page               = undefined;
+    }
+
     Engine.prototype.destroyPage = function(page)
     {
-        if (this.page && this.page.destroy) 
+        if (page && page.destroy)
         {
-            new BasicDestroyEffects(this.page.destroy, after);
-        } else { 
-            document.body.innerHTML = ""; 
+            new BasicDestroyEffects(page.destroy);
         }
+
+        this.destroyPageWithoutEffect(page || this.page);
     }
 
     Engine.prototype.initPage = async function(page)
     {
         this.elements     = [];
         this.afterRender  = page.onReady || [];
-        this.page         = (typeof page === 'string') ? window[page]:page;
+        this.page         = cloneObject((typeof page === 'string') ? window[page]:page);
         this.page.reverse = (this.page.reverse !== undefined) ? this.page.reverse:false;
         document.body.className = this.page.cls;
 
@@ -401,7 +414,7 @@ var Engine = (function()
     {
         var page = (typeof page === 'string') ? window[page]:page;
 
-        this.destroyPage();
+        this.destroyPage(this.page);
         this.initPage(page);
     }
 
