@@ -12,6 +12,8 @@
 >    5. sys
 >    6. warring
 >2. Redis
+>3. nodeJS
+>    1. jsdoc
 
 ## Windows installation in process
 
