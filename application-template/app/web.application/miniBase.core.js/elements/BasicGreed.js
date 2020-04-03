@@ -24,7 +24,7 @@ var BasicGreed = (function()
 
     BasicGreed.prototype.generateCell = function(data)
     {
-        var td = document.createElement("span");
+        var td = document.createElement("p");
 
         td.className   = this.clsName + "-Cell";
         td.innerHTML   = data;
@@ -33,9 +33,9 @@ var BasicGreed = (function()
         return td;
     }
 
-    BasicGreed.prototype.clearRows = function(xhr, clearOld)
+    BasicGreed.prototype.clearRows = function()
     {
-        clean = []
+        var clean = [];
 
         for (n=0; n < this.rows.length; n++)
         {

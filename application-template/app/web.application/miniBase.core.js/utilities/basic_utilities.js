@@ -21,6 +21,19 @@ function _addEventListener(element, event, action)
 	}
 }
 
+function bytesToSize(bytes) 
+{
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    
+    if (bytes === 0) return 'n/a';
+    
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+    
+    if (i === 0) return bytes + " " + sizes[i];
+    
+    return (bytes / (1024 ** i)).toFixed(1) + " " + sizes[i];
+}
+
 function getScrollPositionByCSS1Support(isCSS1Compat)
 {
     var xy = {};
@@ -134,4 +147,46 @@ function format(str, args)
     }
 
     return currentLine;
+}
+
+function cloneArray(obj)
+{
+    var clone = [];
+
+    for (var n=0; n < obj.length; n++)
+    {
+        var val = obj[n];
+
+        if (val.constructor.name === 'Object')
+        {
+            clone.push(cloneObject(val));
+        } else if (val.constructor.name === 'Array') {
+            clone.push(cloneArray(val));
+        } else {
+            clone.push(val);
+        }
+    }
+
+    return clone;
+}
+
+function cloneObject(obj)
+{
+    var clone = {};
+
+    for (var prop in obj)
+    {
+        var val = obj[prop];
+
+        if (val.constructor.name === 'Object')
+        {
+            clone[prop] = cloneObject(val);
+        } else if (val.constructor.name === 'Array') {
+            clone[prop] = cloneArray(val);
+        } else {
+            clone[prop] = val;
+        }
+    }
+
+    return clone;
 }
